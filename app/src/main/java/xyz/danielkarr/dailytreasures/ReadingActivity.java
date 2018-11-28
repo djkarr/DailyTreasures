@@ -34,13 +34,7 @@ public class ReadingActivity extends AppCompatActivity {
 
     private static final String TAG = "READINGACTIVITY";
 
-    /* Inner class that defines the master table contents */
-    public static class MasterEntry implements BaseColumns {
-        public static final String TABLE_NAME = "master";
-        public static final String COLUMN_NAME_BOOK = "book";
-        public static final String COLUMN_NAME_CHAPTER = "chapter";
-        public static final String COLUMN_NAME_NUMVERSES = "numVerses";
-    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,7 +51,7 @@ public class ReadingActivity extends AppCompatActivity {
             }
             mDbHelper = new DatabaseHelper(this);
             setScheduleVariables();
-            calcuateTodaysPortion();
+//            calcuateTodaysPortion();
         } catch (Exception e){
             e.printStackTrace();
         }
@@ -83,21 +77,23 @@ public class ReadingActivity extends AppCompatActivity {
         Log.i(TAG, "setScheduleVariables: DAYS BETEEN***: " + mNumDays);
     }
 
-    private void calcuateTodaysPortion() {
-        // First time accessing DB, initialize it
-        mDB = mDbHelper.getReadableDatabase();
 
-        getTotalVerseCount();
-        mVersesPerDay = mTotalVerses / mNumDays;
-        mVerseRemainder = mTotalVerses % mNumDays;
-        Log.i(TAG, "calcuateTodaysPortion: VersesPerDay Remainder " + mVersesPerDay + " " + mVerseRemainder);
-    }
+//    private void calcuateTodaysPortion() {
+//        // First time accessing DB, initialize it
+//        mDB = mDbHelper.getReadableDatabase();
+//
+//        getTotalVerseCount();
+//        mVersesPerDay = mTotalVerses / mNumDays;
+//        mVerseRemainder = mTotalVerses % mNumDays;
+//        Log.i(TAG, "calcuateTodaysPortion: VersesPerDay Remainder " + mVersesPerDay + " " + mVerseRemainder);
+//    }
 
     /**
      * Get the total amount of verses in a particular book.
      * @param bookNum the index of the book, it is 1 based not 0 based
      * @return total verses in the book
      */
+    /*
     private int getTotalBookVerseCount(int bookNum){
         String selectQuery = "SELECT " + MasterEntry.COLUMN_NAME_NUMVERSES + " FROM " + MasterEntry.TABLE_NAME + " WHERE "
                 + MasterEntry.COLUMN_NAME_BOOK + " = " + bookNum;
@@ -134,5 +130,5 @@ public class ReadingActivity extends AppCompatActivity {
         }
         Log.i(TAG, "getTotalVerseCount: TOTALVERSECOUNT " + totalVerses);
         return totalVerses;
-    }
+    } */
 }
