@@ -40,8 +40,10 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="2"
+            android:background="@color/colorPrimary"
             android:text="Button"
             android:textAllCaps="false"
+            android:textColor="@color/colorPrimaryDark"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/start_date_label"
             app:layout_constraintTop_toTopOf="parent" />
@@ -79,8 +81,10 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="2"
+            android:background="@color/colorPrimary"
             android:text="Button"
             android:textAllCaps="false"
+            android:textColor="@color/colorPrimaryDark"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toEndOf="@+id/start_date_label"
             app:layout_constraintTop_toBottomOf="@+id/start_date_button" />
@@ -116,8 +120,10 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="2"
+            android:background="@color/colorPrimary"
             android:text="Button"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            android:textColor="@color/colorPrimaryDark" />
     </TableRow>
 
     <TableRow
@@ -149,8 +155,10 @@
             android:layout_marginTop="8dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="2"
+            android:background="@color/colorPrimary"
             android:text="Button"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            android:textColor="@color/colorPrimaryDark" />
     </TableRow>
 
     <Button
@@ -159,8 +167,10 @@
         android:layout_height="wrap_content"
         android:layout_marginEnd="8dp"
         android:layout_marginBottom="8dp"
-        android:background="@android:color/holo_green_dark"
+        android:background="@color/colorSubmit"
         android:text="@string/submit_button"
+        android:textColor="@color/colorPrimaryDark"
+        android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent" />
 </TableLayout>

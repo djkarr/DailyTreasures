@@ -1,7 +1,6 @@
 package xyz.danielkarr.dailytreasures;
 
 import org.joda.time.LocalDate;
-
 import java.util.Calendar;
 import java.util.Date;
 

@@ -77,8 +77,14 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         mBookList = mSchedule.getBookList();
         mDailyList = new ArrayList<>();
         mDailyCountList = new ArrayList<>();
-        mDbHelper = new DatabaseHelper(this);
-        mDB = mDbHelper.getReadableDatabase();
+        try{
+            mDbHelper = new DatabaseHelper(this);
+            mDB = mDbHelper.getReadableDatabase();
+            Log.i(TAG, "onCreate: GOT READABLE DB");
+        } catch (Error e){
+            e.printStackTrace();
+        }
+
     }
 
    @Override
@@ -110,6 +116,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
 
     @OnClick(R.id.start_book_button)
     public void onStartBookButtonClick(){
+        clearSchedule();
         ArrayList<String> bookList = mSchedule.getBookList();
         Intent intent = new Intent(this, BookListActivity.class);
         intent.putExtra("booklist", bookList);
@@ -119,6 +126,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
 
     @OnClick(R.id.end_book_button)
     public void onEndBookButtonClick(){
+        clearSchedule();
         ArrayList<String> bookList = mSchedule.getBookList();
         Intent intent = new Intent(this, BookListActivity.class);
         intent.putExtra("booklist", bookList);
@@ -128,6 +136,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
 
     @OnClick(R.id.start_date_button)
     public void onStartDateClick(){
+        clearSchedule();
         DialogFragment newFragment = new DatePickerFragment();
         ((DatePickerFragment) newFragment).setFragmentType(DatePickerFragment.FragmentType.START_DATE);
         newFragment.show(getSupportFragmentManager(),"Date Picker");
@@ -135,6 +144,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
 
     @OnClick(R.id.end_date_button)
     public void onEndDateCLick(){
+        clearSchedule();
         DialogFragment newFragment = new DatePickerFragment();
         ((DatePickerFragment) newFragment).setFragmentType(DatePickerFragment.FragmentType.END_DATE);
         newFragment.show(getSupportFragmentManager(),"Date Picker");
@@ -144,11 +154,15 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     public void onSubmitClick(){
         if(isDateBeforeDate(mSchedule.getStartDate(),mSchedule.getEndDate())){
             // If start date is before end date, calculate total days and verses and check if verses/day >= 1
-            mDB = mDbHelper.getReadableDatabase();
+//            mDB = mDbHelper.getReadableDatabase();
             setNumDaysTotal();
             setTotalVerseCount();
             if(isPortionSizeSufficient()){
                 calcuateDailyPortions();
+                writeToFile();
+//                for(int i=0; i<mDailyList.size(); i++){
+//                    Log.i(TAG, "onSubmitClick: " + mDailyList.get(i).toString());
+//                }
             } else {
                 Toast.makeText(this,"You need at least 1 verse per day, right now you have " + mTotalVerses
                         + " verses spread across " + mNumDaysTotal + " days!", Toast.LENGTH_LONG).show();
@@ -156,26 +170,34 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         } else {
             Toast.makeText(this,"Start date must come before end date!", Toast.LENGTH_SHORT).show();
         }
+    }
 
+    public void writeToFile(){
+        String filename = "schedule";
+        FileOutputStream outputStream;
 
-//        TODO delete after refactor
-//        if(isDateBeforeDate(mSchedule.getStartDate(),mSchedule.getEndDate())){
-//            String filename = "schedule";
-//            String fileContents = dateToString(mSchedule.getStartDate()) + "\n" + dateToString(mSchedule.getEndDate())
-//                    + "\n" + mSchedule.getStartingBook() + "\n" + mSchedule.getEndingBook();
-//            FileOutputStream outputStream;
-//
-//            try {
-//                outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
-//                outputStream.write(fileContents.getBytes());
-//                outputStream.close();
-//                finish();
-//            } catch (Exception e) {
-//                e.printStackTrace();
-//            }
-//        } else {
-//            Toast.makeText(this,"Start date must come before end date!", Toast.LENGTH_SHORT).show();
-//        }
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            for(int i=0; i<mDailyList.size(); i++){
+                String fileContents = mDailyList.get(i).toString() +"\n";
+                outputStream.write(fileContents.getBytes());
+            }
+            outputStream.close();
+            String[] list = fileList();
+            Log.i(TAG, "writeToFile: LIST LENGTH " + list.length);
+            for (String s:list
+                    ) {
+                Log.i(TAG, "writeToFile: FILELIST " + s);
+            }
+            finish();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void clearSchedule(){
+        mDailyList.clear();
+        mDailyCountList.clear();
     }
 
     /**
@@ -211,11 +233,11 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         if(fType == DatePickerFragment.FragmentType.START_DATE){
             mStartDateButton.setText((month+1) + "/" + day + "/" + year);
             mSchedule.setStartDate(date);
-            Log.i("SCHEULDER", "onDatePicked: StartDate" + mSchedule.getStartDate().toString());
+//            Log.i("SCHEULDER", "onDatePicked: StartDate" + mSchedule.getStartDate().toString());
         } else {
             mEndDateButton.setText((month+1) + "/" + day + "/" + year);
             mSchedule.setEndDate(date);
-            Log.i("SCHEULDER", "onDatePicked: ENDDate" + mSchedule.getEndDate().toString());
+//            Log.i("SCHEULDER", "onDatePicked: ENDDate" + mSchedule.getEndDate().toString());
         }
     }
 
@@ -224,19 +246,24 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     private void calcuateDailyPortions() {
         int sBook = getBookIndex(mSchedule.getStartingBook());
         LocalDate sDate = new LocalDate(mSchedule.getStartDate());
-        int numChapters = getNumChaptersInBook(sBook);
-        int eBook= mBookList.indexOf(mSchedule.getEndingBook()) + 1;
 
         // 1. Create portion with starting ref and beginning date
         DailyPortion original = new DailyPortion(sDate, sBook, 1, 1);
-        // 2. Pass that portion to getNextXVerses
-        DailyPortion currentPortion = getNextXverses(original,0);
-        Log.i(TAG, "calcuateDailyPortions: PORTION AFTER CHANGES " + currentPortion.toString());
-        Log.i(TAG, "calcuateDailyPortions: DAILYVERSES REMAINDER " + mVersesPerDay + " " + mVerseRemainder);
-        Log.i(TAG, "calcuateDailyPortions: TOTALVERSES TOTALDAYS " + mTotalVerses + " " + mNumDaysTotal);
+
         for(int i=0; i<mDailyCountList.size(); i++){
-            Log.i(TAG, "calcuateDailyPortions: V Per Day " + mDailyCountList.get(i));
+            // 2. Pass that portion to getNextXVerses
+            DailyPortion currentPortion = getNextXverses(original,i);
+            mDailyList.add(currentPortion);
+            original = getNewStartingPortion(currentPortion);
         }
+
+
+//        Log.i(TAG, "calcuateDailyPortions: PORTION AFTER CHANGES " + currentPortion.toString());
+//        Log.i(TAG, "calcuateDailyPortions: DAILYVERSES REMAINDER " + mVersesPerDay + " " + mVerseRemainder);
+//        Log.i(TAG, "calcuateDailyPortions: TOTALVERSES TOTALDAYS " + mTotalVerses + " " + mNumDaysTotal);
+//        for(int i=0; i<mDailyCountList.size(); i++){
+//            Log.i(TAG, "calcuateDailyPortions: V Per Day " + mDailyCountList.get(i));
+//        }
         // 3. Retrieve completed daily portion and add it to the DailyList
         // 4. Create new portion starting at end of previous and pass it
         // 5. Repeat until done (can use total number of days to check)
@@ -245,35 +272,98 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
 
     /**
      * Get the reference of mVersesPerDay verses later, assign it to the portion, and return it
-     * @param portion the started DailyPortion with start refs already filled
+     * @param incompletePortion the started DailyPortion with start refs already filled
      * @return the completed portion with ending references
      */
-    private DailyPortion getNextXverses(DailyPortion portion, int countIndex){
+    private DailyPortion getNextXverses(DailyPortion incompletePortion, int countIndex){
+        DailyPortion portion = incompletePortion;
         int sBook = portion.getStartingBookIndex();
         int sChapter = portion.getStartingChapter();
         int sVerse = portion.getStartingVerse();
         int thisDayCount = mDailyCountList.get(countIndex);
 
+        do {
+            int chapsInBook = getNumChaptersInBook(sBook);
+            int versesInChap = getNumVersesInChapter(sBook,sChapter);
+            int unreadVerses = versesInChap - (sVerse - 1);
+//            Log.i(TAG, "getNextXverses: BOOK CHAP CHAPSINBOOK " + sBook + " " + sChapter + " " + chapsInBook);
 
-        int versesInChap = 0;
-        String selectQuery = "SELECT " + MasterEntry.COLUMN_NAME_NUMVERSES + " FROM " + MasterEntry.TABLE_NAME + " WHERE "
-                + MasterEntry.COLUMN_NAME_BOOK + " = " + sBook + " AND " + MasterEntry.COLUMN_NAME_CHAPTER + " = " + sChapter;
-        Cursor c = mDB.rawQuery(selectQuery, null);
-        if (c.moveToFirst()) {
-            versesInChap = c.getInt(0);
-        }
-        c.close();
+            // If there are enough verses left in current chapter
+            if(unreadVerses >= thisDayCount){
+                int eVerse = thisDayCount - 1 + sVerse;
+                portion.setEndingBookIndex(sBook);
+                portion.setEndingChapter(sChapter);
+                portion.setEndingVerse(eVerse);
+                thisDayCount = 0;
+            } else {
+                thisDayCount -= unreadVerses;
+                sVerse = 1;
+                //Go to next chapter
+                sChapter += 1;
+                //If at end of book go to next book
+                if(sChapter > chapsInBook){
+                    sChapter = 1;
+                    sBook += 1;
+                    //If at last book go to first
+                    if(sBook > 66){
+                        sBook = 1;
+                    }
+                }
+            }
+        } while (thisDayCount > 0);
 
-        int unreadVerses = versesInChap - (sVerse - 1);
-        // TODO handle remainder
-        if(unreadVerses >= thisDayCount){
-            int eVerse = thisDayCount - 1 + sVerse;
-            portion.setEndingBookIndex(sBook);
-            portion.setEndingChapter(sChapter);
-            portion.setEndingVerse(eVerse);
-
-        }
         return portion;
+    }
+
+    /**
+     * Takes a daily portion, increments verse, possibly to new chapter or book, and assigns date 1 day later
+     * @param endPortion
+     * @return
+     */
+    private DailyPortion getNewStartingPortion(DailyPortion endPortion) {
+        int eVerse = endPortion.getEndingVerse() + 1;
+        int eChap = endPortion.getEndingChapter();
+        int eBook = endPortion.getEndingBookIndex();
+        LocalDate sDate = endPortion.getDate();
+        sDate = sDate.plusDays(1);
+//        Log.i(TAG, "getNewStartingPortion: book chap " + eBook + " " + eChap);
+        int versesInChap = getNumVersesInChapter(eBook,eChap);
+        int chapsInBook = getNumChaptersInBook(eBook);
+        // Not the last verse in the chapter
+        if(eVerse <= versesInChap){
+            return new DailyPortion(sDate,eBook,eChap,eVerse);
+        } else if(eChap+1 <= chapsInBook){ // End of chapter but not end of book
+//            Log.i(TAG, "getNewStartingPortion: BOOK CHAP " + eBook + " " + eChap+1);
+            return new DailyPortion(sDate,eBook,eChap+1,1);
+        } else {        // End of book
+            eBook++;
+            if(eBook > 66) { eBook = 1; }
+            return new DailyPortion(sDate,eBook,1,1);
+        }
+
+    }
+
+    /**
+     * Get the number of verses in a particular chapter.
+     * @param bookNum
+     * @param chapter
+     * @return
+     */
+    private int getNumVersesInChapter(int bookNum, int chapter){
+//        Log.i(TAG, "getNumVersesInChapter: BOOKNUM CHAPTER " + bookNum + " " + chapter);
+        String selectQuery = "SELECT " + MasterEntry.COLUMN_NAME_NUMVERSES + " FROM " + MasterEntry.TABLE_NAME + " WHERE "
+                + MasterEntry.COLUMN_NAME_BOOK + " = " + bookNum + " AND " + MasterEntry.COLUMN_NAME_CHAPTER + " = " + chapter;
+        Cursor c = mDB.rawQuery(selectQuery, null);
+        int verses = 0;
+        if (c.moveToFirst()) {
+            verses = c.getInt(0);
+            c.close();
+            return verses;
+        } else {
+            Log.e(TAG, "getNumVersesInChapter: CURSOR ERROR");
+            c.close();
+            return -1;
+        }
     }
 
     /**
@@ -285,8 +375,10 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         String selectQuery = "SELECT " + MasterEntry.COLUMN_NAME_NUMVERSES + " FROM " + MasterEntry.TABLE_NAME + " WHERE "
                 + MasterEntry.COLUMN_NAME_BOOK + " = " + bookNum;
 
+
+
         ArrayList<Integer> numVersesList = new ArrayList<>();
-        Cursor c = mDB.rawQuery(selectQuery, null);
+        Cursor c = mDB.rawQuery(selectQuery,null);
 
         // TODO combine these blocks when debugging is no longer necessary
         if (c.moveToFirst()) {
@@ -297,7 +389,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
 
         int bookTotal = 0;
         for (int x:numVersesList                ) {
-            Log.i(TAG, "calcuateTodaysPortion: Verses: " + x);
+//            Log.i(TAG, "calcuateTodaysPortion: Verses: " + x);
             bookTotal += x;
         }
         c.close();
@@ -314,9 +406,12 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
                 + MasterEntry.COLUMN_NAME_BOOK + " = " + bookNum + " ORDER BY " + MasterEntry.COLUMN_NAME_CHAPTER +  " DESC";
         Cursor c = mDB.rawQuery(selectQuery, null);
         if (c.moveToFirst()) {
-            return c.getInt(0);
+            int a = c.getInt(0);
+            c.close();
+            return a;
         } else {
             Log.e(TAG, "getNumChaptersInBook: ERROR GETTING NUMBER OF CHAPTERS");
+            c.close();
             return -1;
         }
     }
@@ -329,7 +424,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     private void setTotalVerseCount(){
         int startingIndex = mBookList.indexOf(mSchedule.getStartingBook());
         int endingIndex = mBookList.indexOf(mSchedule.getEndingBook());
-        Log.i(TAG, "getTotalVerseCount: Starting index: " + startingIndex);
+//        Log.i(TAG, "getTotalVerseCount: Starting index: " + startingIndex);
         boolean finished = true;
         int totalVerses = 0;
         // Loop through all books until
@@ -340,7 +435,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
                 finished = false;
             }
         }
-        Log.i(TAG, "getTotalVerseCount: TOTALVERSECOUNT " + totalVerses);
+//        Log.i(TAG, "getTotalVerseCount: TOTALVERSECOUNT " + totalVerses);
         mTotalVerses = totalVerses;
     }
 
@@ -350,7 +445,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     private void setNumDaysTotal(){
         LocalDate startDate = dateToLocalDate(mSchedule.getStartDate());
         LocalDate endDate = dateToLocalDate(mSchedule.getEndDate());
-        mNumDaysTotal = Days.daysBetween(startDate,endDate).getDays();
+        mNumDaysTotal = Days.daysBetween(startDate,endDate).getDays() + 1;
     }
 
     /**

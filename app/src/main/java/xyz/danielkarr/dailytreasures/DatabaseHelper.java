@@ -5,6 +5,8 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Build;
+import android.util.Log;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -15,16 +17,25 @@ import java.io.OutputStream;
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
     private static final String DB_NAME = "Bible.db";
-    private static String DB_PATH = "/data/data/"+BuildConfig.APPLICATION_ID+"/databases/";
+    private String DB_PATH;
     private final Context mContext;
     public SQLiteDatabase myDataBase;
+
+    private final String TAG = "DBHELPER";
 
 
 
 
     public DatabaseHelper(Context context){
         super(context,DB_NAME,null,1);
+        //TODO SWITCH BACK IF THIS BREAKS
+        //DB_PATH = mContext.getDatabasePath(DB_NAME).getAbsolutePath();
+        if (android.os.Build.VERSION.SDK_INT >= 17)
+            DB_PATH = context.getApplicationInfo().dataDir + "/databases/" + DB_NAME;
+        else
+            DB_PATH = "/data/data/" + context.getPackageName() + "/databases/" + DB_NAME;
         this.mContext = context;
+        Log.i(TAG, "DatabaseHelper: DBPATH " + DB_PATH);
         boolean dbexist = checkdatabase();
         if (dbexist) {
             System.out.println("Database exists");
@@ -40,6 +51,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
+//    @Override
+//    public void onConfigure(SQLiteDatabase db) {
+//        super.onOpen(db);
+//        db.disableWriteAheadLogging();
+//    }
+
+
     @Override
     public void onCreate(SQLiteDatabase db) {
 
@@ -47,6 +65,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        if(newVersion>oldVersion){
+            try {
+                copydatabase();
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
 
     }
 
@@ -67,10 +92,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private boolean checkdatabase() {
 
         boolean checkdb = false;
-        try {
-            String myPath = DB_PATH + DB_NAME;
+        try{
+            String myPath = DB_PATH;
             File dbfile = new File(myPath);
             checkdb = dbfile.exists();
+            Log.i(TAG, "checkdatabase: IFDBFILEEXISTS " + checkdb);
         } catch(SQLiteException e) {
             System.out.println("Database doesn't exist");
         }
@@ -78,39 +104,48 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private void copydatabase() throws IOException {
-        //Open your local db as the input stream
-        InputStream myinput = mContext.getAssets().open("databases/" + DB_NAME);
-
-        // Path to the just created empty db
-        String outfilename = DB_PATH + DB_NAME;
-
-        //Open the empty db as the output stream
-        OutputStream myoutput = new FileOutputStream(outfilename);
-
-        // transfer byte to inputfile to outputfile
+        Log.i("Database",
+                "New database is being copied to device!");
         byte[] buffer = new byte[1024];
+        OutputStream myOutput = null;
         int length;
-        while ((length = myinput.read(buffer))>0) {
-            myoutput.write(buffer,0,length);
-        }
+        // Open your local db as the input stream
+        InputStream myInput = null;
+        try
+        {
+            myInput = mContext.getAssets().open("databases/Bible.db");
+            // transfer bytes from the inputfile to the
+            // outputfile
+            myOutput =new FileOutputStream(DB_PATH);
+            while((length = myInput.read(buffer)) > 0)
+            {
+                myOutput.write(buffer, 0, length);
+            }
+            myOutput.close();
+            myOutput.flush();
+            myInput.close();
+            Log.i("Database",
+                    "New database has been copied to device!");
 
-        //Close the streams
-        myoutput.flush();
-        myoutput.close();
-        myinput.close();
+
+        }
+        catch(IOException e)
+        {
+            e.printStackTrace();
+        }
     }
 
     public void opendatabase() throws SQLException {
         //Open the database
-        String mypath = DB_PATH + DB_NAME;
+        String mypath = DB_PATH;
         myDataBase = SQLiteDatabase.openDatabase(mypath, null, SQLiteDatabase.OPEN_READWRITE);
     }
 
-    public synchronized void close() {
-        if(myDataBase != null) {
-            myDataBase.close();
-        }
-        super.close();
-    }
+//    public synchronized void close() {
+//        if(myDataBase != null) {
+//            myDataBase.close();
+//        }
+//        super.close();
+//    }
 
 }
