@@ -14,27 +14,35 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+
 public class DatabaseHelper extends SQLiteOpenHelper {
+    private static DatabaseHelper mInstance = null;
     private static final int DATABASE_VERSION = 1;
     private static final String DB_NAME = "Bible.db";
     private String DB_PATH;
-    private final Context mContext;
+    private static Context mContext;
     public SQLiteDatabase myDataBase;
 
     private final String TAG = "DBHELPER";
 
+    public static synchronized DatabaseHelper getInstance(Context ctx) {
 
+        // Use the application context, which will ensure that you
+        // don't accidentally leak an Activity's context.
+        // See this article for more information: http://bit.ly/6LRzfx
+        if (mInstance == null) {
+            mInstance = new DatabaseHelper(ctx.getApplicationContext());
+        }
+        return mInstance;
+    }
 
-
-    public DatabaseHelper(Context context){
-        super(context,DB_NAME,null,1);
-        //TODO SWITCH BACK IF THIS BREAKS
-        //DB_PATH = mContext.getDatabasePath(DB_NAME).getAbsolutePath();
+    private DatabaseHelper(Context ctx) {
+        super(ctx, DB_NAME, null, DATABASE_VERSION);
         if (android.os.Build.VERSION.SDK_INT >= 17)
-            DB_PATH = context.getApplicationInfo().dataDir + "/databases/" + DB_NAME;
+            DB_PATH = ctx.getApplicationInfo().dataDir + "/databases/" + DB_NAME;
         else
-            DB_PATH = "/data/data/" + context.getPackageName() + "/databases/" + DB_NAME;
-        this.mContext = context;
+            DB_PATH = "/data/data/" + ctx.getPackageName() + "/databases/" + DB_NAME;
+        this.mContext = ctx;
         Log.i(TAG, "DatabaseHelper: DBPATH " + DB_PATH);
         boolean dbexist = checkdatabase();
         if (dbexist) {
@@ -47,15 +55,34 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-
         }
     }
 
-//    @Override
-//    public void onConfigure(SQLiteDatabase db) {
-//        super.onOpen(db);
-//        db.disableWriteAheadLogging();
+//    public DatabaseHelper(Context context){
+//        super(context,DB_NAME,null,1);
+//        //TODO SWITCH BACK IF THIS BREAKS
+//        //DB_PATH = mContext.getDatabasePath(DB_NAME).getAbsolutePath();
+//        if (android.os.Build.VERSION.SDK_INT >= 17)
+//            DB_PATH = context.getApplicationInfo().dataDir + "/databases/" + DB_NAME;
+//        else
+//            DB_PATH = "/data/data/" + context.getPackageName() + "/databases/" + DB_NAME;
+//        this.mContext = context;
+//        Log.i(TAG, "DatabaseHelper: DBPATH " + DB_PATH);
+//        boolean dbexist = checkdatabase();
+//        if (dbexist) {
+//            System.out.println("Database exists");
+//            opendatabase();
+//        } else {
+//            System.out.println("Database doesn't exist");
+//            try {
+//                createdatabase();
+//            } catch (IOException e) {
+//                e.printStackTrace();
+//            }
+//        }
 //    }
+
+
 
 
     @Override
@@ -81,6 +108,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             System.out.println(" Database exists.");
         } else {
             this.getReadableDatabase();
+            this.close();
             try {
                 copydatabase();
             } catch(IOException e) {
@@ -90,7 +118,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     }
 
     private boolean checkdatabase() {
-
         boolean checkdb = false;
         try{
             String myPath = DB_PATH;
@@ -126,8 +153,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             myInput.close();
             Log.i("Database",
                     "New database has been copied to device!");
-
-
         }
         catch(IOException e)
         {
@@ -138,7 +163,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void opendatabase() throws SQLException {
         //Open the database
         String mypath = DB_PATH;
-        myDataBase = SQLiteDatabase.openDatabase(mypath, null, SQLiteDatabase.OPEN_READWRITE);
+        //TODO possibly change back to readwrite
+        myDataBase = SQLiteDatabase.openDatabase(mypath, null, SQLiteDatabase.OPEN_READONLY);
     }
 
 //    public synchronized void close() {
@@ -147,5 +173,11 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 //        }
 //        super.close();
 //    }
+
+    @Override
+    public void onOpen(SQLiteDatabase db) {
+        super.onOpen(db);
+        db.disableWriteAheadLogging();
+    }
 
 }

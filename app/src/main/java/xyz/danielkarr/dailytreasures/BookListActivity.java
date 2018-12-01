@@ -38,7 +38,7 @@ public class BookListActivity extends AppCompatActivity implements MyRecyclerVie
 
     @Override
     public void onItemClick(View view, int position) {
-        Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
+//        Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
         String book = adapter.getItem(position);
         Intent intent=new Intent();
         intent.putExtra("ReturnedBook",book);

@@ -1,6 +1,5 @@
 package xyz.danielkarr.dailytreasures;
 
-import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
@@ -10,13 +9,9 @@ import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.TextView;
 
-import org.joda.time.Days;
-import org.joda.time.LocalDate;
-import org.joda.time.Period;
 
 import java.io.BufferedReader;
 import java.io.FileInputStream;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -48,6 +43,9 @@ public class ReadingActivity extends AppCompatActivity {
     private boolean mIsSingleChap;
     private boolean mIsSingleBook;
 
+    private int mScheduleNum;
+    private String mFileName;
+
     private static final String TAG = "READINGACTIVITY";
 
     public static class BibleCols implements BaseColumns {
@@ -73,12 +71,19 @@ public class ReadingActivity extends AppCompatActivity {
             Log.i(TAG, "onCreate: FILELIST " + s);
         }
 
+        mScheduleNum = getIntent().getIntExtra("scheduleNum",1);
+        if(mScheduleNum == 1){
+            mFileName = "schedule";
+            setTitle("Reading Portion " + 1);
+        } else {
+            mFileName = "schedule2";
+            setTitle("Reading Portion " + 2);
+        }
         mLines = new ArrayList<>();
         mCompleteVerseList = new ArrayList<>();
-        String curLine = null;
 
         try{
-            FileInputStream fis = this.openFileInput("schedule");
+            FileInputStream fis = this.openFileInput(mFileName);
             InputStreamReader isr = new InputStreamReader(fis);
             BufferedReader bufferedReader = new BufferedReader(isr);
             String line;
@@ -106,11 +111,12 @@ public class ReadingActivity extends AppCompatActivity {
         mTextView.setMovementMethod(new ScrollingMovementMethod());
 
 
-        mDbHelper = new DatabaseHelper(this);
+        mDbHelper = DatabaseHelper.getInstance(this);
         mDB = mDbHelper.getReadableDatabase();
         Date today = new Date();
         mStringDate = dateToString(today);
-        for(int i=0; i<mLines.size(); i++){
+        // With new summary line as first line, start at index 1
+        for(int i=1; i<mLines.size(); i++){
             if(mLines.get(i).startsWith(mStringDate)){
                 mTodayIndex = i;
                 break;

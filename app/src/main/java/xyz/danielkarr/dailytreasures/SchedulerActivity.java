@@ -11,13 +11,18 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.joda.time.Days;
 import org.joda.time.LocalDate;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
@@ -53,6 +58,9 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     private ArrayList<String> mBookList;
     private ArrayList<Integer> mDailyCountList;
 
+    private int mScheduleNum;
+    private String mFileName;
+
     private static final String TAG = "SCHEDULER_ACTIVITY";
 
     /* Inner class that defines the master table contents */
@@ -63,12 +71,26 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         public static final String COLUMN_NAME_NUMVERSES = "numVerses";
     }
 
+    @BindView(R.id.schedule1_info)
+    TextView mScheduleOneInfo;
+
+    @BindView(R.id.schedule2_info)
+    TextView mScheduleTwoInfo;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_scheduler);
         ButterKnife.bind(this);
 
+        mScheduleNum = getIntent().getIntExtra("scheduleNum",1);
+        if(mScheduleNum == 1){
+            mFileName = "schedule";
+            setTitle("Schedule " + 1);
+        } else {
+            mFileName = "schedule2";
+            setTitle("Schedule " + 2);
+        }
         mSchedule = Schedule.getInstance();
         mStartDateButton.setText(dateToString(mSchedule.getStartDate()));
         mEndDateButton.setText(dateToString(mSchedule.getEndDate()));
@@ -78,19 +100,20 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         mDailyList = new ArrayList<>();
         mDailyCountList = new ArrayList<>();
         try{
-            mDbHelper = new DatabaseHelper(this);
+            mDbHelper = DatabaseHelper.getInstance(this);
             mDB = mDbHelper.getReadableDatabase();
             Log.i(TAG, "onCreate: GOT READABLE DB");
         } catch (Error e){
             e.printStackTrace();
         }
+        populateSummary();
 
     }
 
    @Override
    protected void onResume(){
         super.onResume();
-        File file = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule");
+        File file = new File("/data/data/xyz.danielkarr.dailytreasures/files/" +mFileName);
         if(file.exists()){
             Toast.makeText(this,"WARNING: Creating a new schedule will override the old one! Hit " +
                     "the back button to cancel.", Toast.LENGTH_LONG).show();
@@ -159,6 +182,8 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
             setTotalVerseCount();
             if(isPortionSizeSufficient()){
                 calcuateDailyPortions();
+                mDbHelper.close();
+                mDB.close();
                 writeToFile();
 //                for(int i=0; i<mDailyList.size(); i++){
 //                    Log.i(TAG, "onSubmitClick: " + mDailyList.get(i).toString());
@@ -172,12 +197,61 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         }
     }
 
+    public void populateSummary(){
+        File fileOne = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule");
+        String scheduleOne, scheduleTwo;
+        if(fileOne.exists()){
+            scheduleOne = getSummaryLine("schedule");
+            scheduleOne = parseSummaryLine(scheduleOne,1);
+            mScheduleOneInfo.setText(scheduleOne);
+        }else {
+            mScheduleOneInfo.setText("Schedule 1" +"\n\n" + "Doesn't Exist");
+        }
+        File fileTwo = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule2");
+        if(fileTwo.exists()){
+            scheduleTwo = getSummaryLine("schedule2");
+            scheduleTwo = parseSummaryLine(scheduleTwo,2);
+            mScheduleTwoInfo.setText(scheduleTwo);
+        } else {
+            mScheduleTwoInfo.setText("Schedule 2" +"\n\n" + "Doesn't Exist");
+        }
+    }
+
+    private String parseSummaryLine(String summaryLine, int num){
+        String[] s = summaryLine.split(" ");
+        if(s.length == 4){
+            return  "Schedule " + num + "\n\n" + "Start Date: " + s[0] + "\n\n" + "End Date: " + s[1] + "\n\n" + "Starting Book: " + s[2] +
+                    "\n\n" + "Ending Book: " + s[3];
+        } else {
+            return  "Schedule " + num + "\n\n" + "Start Date: " + s[0] + "\n\n" + "End Date: " + s[1] + "\n\n" + "Starting Book: " + s[2] +
+                    "\n\n" + "Ending Book: " + s[3] + " " + s[4];
+        }
+
+    }
+
+    private String getSummaryLine(String file){
+        String schedule = "";
+        try{
+            FileInputStream fis = this.openFileInput(file);
+            InputStreamReader isr = new InputStreamReader(fis);
+            BufferedReader bufferedReader = new BufferedReader(isr);
+            schedule = bufferedReader.readLine();
+            bufferedReader.close();
+        } catch (IOException e){
+            e.printStackTrace();
+        }
+        return schedule;
+    }
+
     public void writeToFile(){
-        String filename = "schedule";
+        String filename = mFileName;
         FileOutputStream outputStream;
+        String summary = dateToString(mSchedule.getStartDate()) + " " + dateToString(mSchedule.getEndDate()) + " " +
+                mSchedule.getStartingBook() + " " + mSchedule.getEndingBook() + "\n";
 
         try {
             outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(summary.getBytes());
             for(int i=0; i<mDailyList.size(); i++){
                 String fileContents = mDailyList.get(i).toString() +"\n";
                 outputStream.write(fileContents.getBytes());

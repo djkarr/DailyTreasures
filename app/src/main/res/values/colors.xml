@@ -1,11 +1,22 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="colorPrimary">#efc99f</color>
+    <color name="colorPrimary">#262322</color>
     <color name="colorPrimaryDark">#3d3116</color>
     <color name="colorAccent">#364156</color>
-    <color name="colorBackground">#262322</color>
+    <color name="colorBackground">#efc99f</color>
     <!--<color name="colorBackground">#475B5A</color>-->
     <!--<color name="colorBackground">#95703d</color>-->
-    <color name="colorText">#d1d97a</color>
+    <color name="colorText">#3d3116</color>
     <color name="colorSubmit">#1E555C</color>
+    <color name="colorHighlight">#d1d97a</color>
 </resources>
+
+
+
+
+<!--<color name="colorPrimary">#efc99f</color>-->
+<!--<color name="colorPrimaryDark">#3d3116</color>-->
+<!--<color name="colorAccent">#364156</color>-->
+<!--<color name="colorBackground">#262322</color>-->
+<!--<color name="colorText">#d1d97a</color>-->
+<!--<color name="colorSubmit">#1E555C</color>-->
