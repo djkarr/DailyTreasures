@@ -48,12 +48,12 @@ public class ReadingActivity extends AppCompatActivity {
 
     private static final String TAG = "READINGACTIVITY";
 
-    public static class BibleCols implements BaseColumns {
-        public static final String TABLE_NAME = "bible";
-        public static final String COL_BOOK = "book";
-        public static final String COL_CHAPTER = "chapter";
-        public static final String COL_VERSE = "verse";
-        public static final String COL_TEXT = "versetext";
+    static class BibleCols implements BaseColumns {
+        static final String TABLE_NAME = "bible";
+        static final String COL_BOOK = "book";
+        static final String COL_CHAPTER = "chapter";
+        static final String COL_VERSE = "verse";
+        static final String COL_TEXT = "versetext";
     }
 
     @BindView(R.id.reading_view)
@@ -64,12 +64,6 @@ public class ReadingActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_reading);
         ButterKnife.bind(this);
-        Log.i(TAG, "onCreate: FILELIST" + fileList().toString());
-        String[] list = fileList();
-        for (String s:list
-             ) {
-            Log.i(TAG, "onCreate: FILELIST " + s);
-        }
 
         mScheduleNum = getIntent().getIntExtra("scheduleNum",1);
         if(mScheduleNum == 1){
@@ -98,18 +92,7 @@ public class ReadingActivity extends AppCompatActivity {
             Log.i(TAG, "onCreate: mLines " + mLines.get(i));
         }
 
-
-//        try {
-//            BufferedReader reader = new BufferedReader(new FileReader(this.getFilesDir().getPath() +"/schedule"));
-//            while ((curLine = reader.readLine()) != null) {
-//                mLines.add(curLine);
-//            }
-//        } catch (Exception e){
-//            e.printStackTrace();
-//        }
-
         mTextView.setMovementMethod(new ScrollingMovementMethod());
-
 
         mDbHelper = DatabaseHelper.getInstance(this);
         mDB = mDbHelper.getReadableDatabase();
@@ -135,20 +118,12 @@ public class ReadingActivity extends AppCompatActivity {
         setScheduleVariables();
         populateVerseList();
         populateTextView();
-
-
-//        Log.i(TAG, "onCreate: TODAY DATE STRING " + mStringDate);
-//        Log.i(TAG, "onCreate: TODAY INDEX " + mTodayIndex);
-//        Log.i(TAG, "onCreate: TODAY ENTRY " + mLines.get(mTodayIndex));
-//        Log.i(TAG, "onCreate: TodayIndex + TodayEntry " + mTodayIndex + " " + mLines.get(mTodayIndex));
-
-
     }
 
     private void populateTextView(){
         StringBuilder builder = new StringBuilder();
         for (String verse : mCompleteVerseList) {
-            builder.append(verse + "\n");
+            builder.append(verse).append("\n");
         }
 
         mTextView.setText(builder.toString());
@@ -175,18 +150,8 @@ public class ReadingActivity extends AppCompatActivity {
         mEBook = Integer.parseInt(splitLine[4]);
         mEChap = Integer.parseInt(splitLine[5]);
         mEVerse = Integer.parseInt(splitLine[6]);
-        if(mSBook == mEBook){
-            mIsSingleBook = true;
-        } else {
-            mIsSingleBook = false;
-        }
-        if(mIsSingleBook && mSChap == mEChap){
-            mIsSingleChap = true;
-        } else {
-            mIsSingleChap = false;
-        }
-//        Log.i(TAG, "setScheduleVariables: AFTER PARSE " + mSBook + " " + mSChap + " " + mSVerse + " " + mEBook + " " +  mEChap
-//                + " " + mEVerse);
+        mIsSingleBook = mSBook == mEBook;
+        mIsSingleChap = mIsSingleBook && mSChap == mEChap;
     }
 
     private String singleChapterQuery(){
@@ -228,7 +193,7 @@ public class ReadingActivity extends AppCompatActivity {
     }
 
     private void populateVerseList(){
-        String selectionQuery = singleChapterQuery();
+        String selectionQuery;
         if(mIsSingleChap){
             selectionQuery = singleChapterQuery();
         } else if (mIsSingleBook){
@@ -248,11 +213,8 @@ public class ReadingActivity extends AppCompatActivity {
             text = c.getString(3);
             String completeVerse = getAbbreviation(bookNum) + " " + chap + ":" + verse + " " + text;
             mCompleteVerseList.add(completeVerse);
-//            Log.i(TAG, "singleChapterQuery: COMPLETE VERSE: " + completeVerse);
             c.moveToNext();
         }
         c.close();
     }
-
-
 }

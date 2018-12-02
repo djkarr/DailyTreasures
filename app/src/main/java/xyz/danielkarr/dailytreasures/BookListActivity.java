@@ -6,18 +6,15 @@ import android.os.Bundle;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.view.View;
-import android.widget.Toast;
 
 import java.util.ArrayList;
 
 public class BookListActivity extends AppCompatActivity implements MyRecyclerViewAdapter.ItemClickListener {
 
-    MyRecyclerViewAdapter adapter;
+    private MyRecyclerViewAdapter adapter;
     public enum FragmentType{START_BOOK, END_BOOK}
     private FragmentType mFragmentType;
     private int requestcode;
-
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +35,6 @@ public class BookListActivity extends AppCompatActivity implements MyRecyclerVie
 
     @Override
     public void onItemClick(View view, int position) {
-//        Toast.makeText(this, "You clicked " + adapter.getItem(position) + " on row number " + position, Toast.LENGTH_SHORT).show();
         String book = adapter.getItem(position);
         Intent intent=new Intent();
         intent.putExtra("ReturnedBook",book);

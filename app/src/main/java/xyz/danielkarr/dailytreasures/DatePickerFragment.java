@@ -54,7 +54,7 @@ public class DatePickerFragment extends DialogFragment implements DatePickerDial
         this.mFragmentType = type;
     }
 
-    public FragmentType getFragmentType(){
+    private FragmentType getFragmentType(){
         return mFragmentType;
     }
 

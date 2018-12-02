@@ -4,7 +4,10 @@ import org.joda.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
 
-public class DailyPortion {
+/**
+ * Class to make passing data simpler for scheduler.
+ */
+class DailyPortion {
 
     private LocalDate mDate;
     // 1 based
@@ -16,7 +19,7 @@ public class DailyPortion {
     private int mEndingChapter;
     private int mEndingVerse;
 
-    public DailyPortion(LocalDate date, int sBook, int sChap, int sVerse){
+    DailyPortion(LocalDate date, int sBook, int sChap, int sVerse){
         mDate = date;
         mStartingBookIndex = sBook;
         mStartingChapter = sChap;
@@ -40,7 +43,7 @@ public class DailyPortion {
                 mEndingBookIndex + " " + mEndingChapter + " " + mEndingVerse;
     }
 
-    public String dateToString(Date date){
+    private String dateToString(Date date){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
         int year = calendar.get(Calendar.YEAR);
@@ -57,7 +60,7 @@ public class DailyPortion {
         mDate = date;
     }
 
-    public int getStartingBookIndex() {
+    int getStartingBookIndex() {
         return mStartingBookIndex;
     }
 
@@ -65,7 +68,7 @@ public class DailyPortion {
         mStartingBookIndex = startingBookIndex;
     }
 
-    public int getStartingChapter() {
+    int getStartingChapter() {
         return mStartingChapter;
     }
 
@@ -73,7 +76,7 @@ public class DailyPortion {
         mStartingChapter = startingChapter;
     }
 
-    public int getStartingVerse() {
+    int getStartingVerse() {
         return mStartingVerse;
     }
 
@@ -81,27 +84,27 @@ public class DailyPortion {
         mStartingVerse = startingVerse;
     }
 
-    public int getEndingBookIndex() {
+    int getEndingBookIndex() {
         return mEndingBookIndex;
     }
 
-    public void setEndingBookIndex(int endingBookIndex) {
+    void setEndingBookIndex(int endingBookIndex) {
         mEndingBookIndex = endingBookIndex;
     }
 
-    public int getEndingChapter() {
+    int getEndingChapter() {
         return mEndingChapter;
     }
 
-    public void setEndingChapter(int endingChapter) {
+    void setEndingChapter(int endingChapter) {
         mEndingChapter = endingChapter;
     }
 
-    public int getEndingVerse() {
+    int getEndingVerse() {
         return mEndingVerse;
     }
 
-    public void setEndingVerse(int endingVerse) {
+    void setEndingVerse(int endingVerse) {
         mEndingVerse = endingVerse;
     }
 }

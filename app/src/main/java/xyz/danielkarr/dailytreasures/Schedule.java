@@ -7,9 +7,8 @@ import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
-import java.util.List;
 
-public class Schedule {
+class Schedule {
 
     private Date mStartDate;
     private Date mEndDate;
@@ -17,11 +16,9 @@ public class Schedule {
     private String mEndingBook;
     private ArrayList<String> mBookList;
 
-
-
     private static final Schedule ourInstance = new Schedule();
 
-    public static Schedule getInstance() {
+    static Schedule getInstance() {
         return ourInstance;
     }
 
@@ -105,43 +102,43 @@ public class Schedule {
         Log.i("SCHEDULE", "Schedule start date: " + mEndDate.toString());
     }
 
-    public Date getStartDate() {
+    Date getStartDate() {
         return mStartDate;
     }
 
-    public void setStartDate(Date startDate) {
+    void setStartDate(Date startDate) {
         mStartDate = startDate;
     }
 
-    public Date getEndDate() {
+    Date getEndDate() {
         return mEndDate;
     }
 
-    public void setEndDate(Date endDate) {
+    void setEndDate(Date endDate) {
         mEndDate = endDate;
     }
 
-    public String getBookName(int bookNum){
+    private String getBookName(int bookNum){
         return mBookList.get(bookNum);
     }
 
-    public ArrayList<String> getBookList(){
+    ArrayList<String> getBookList(){
         return mBookList;
     }
 
-    public String getStartingBook() {
+    String getStartingBook() {
         return mStartingBook;
     }
 
-    public void setStartingBook(String startingBook) {
+    void setStartingBook(String startingBook) {
         mStartingBook = startingBook;
     }
 
-    public String getEndingBook() {
+    String getEndingBook() {
         return mEndingBook;
     }
 
-    public void setEndingBook(String endingBook) {
+    void setEndingBook(String endingBook) {
         mEndingBook = endingBook;
     }
 }

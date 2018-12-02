@@ -39,6 +39,12 @@ public class EMannaActivity extends AppCompatActivity {
         getWebsite();
     }
 
+    /**
+     * Return String representation of a date, MM/DD/YYYY, if day <10 adds a zero to it
+     * to make it the same format as the eManna site
+     * @param date to get a string of
+     * @return String representation of date
+     */
     public String dateToString(Date date){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -60,12 +66,9 @@ public class EMannaActivity extends AppCompatActivity {
                 try {
                     Document doc = Jsoup.connect(mCompleteURL).get();
                     Elements text = doc.select("p");
-                    System.out.println(text.toString());
-
 
                     for (Element t : text) {
                         builder.append(t.text()).append("\n\n");
-                        System.out.println(t);
                     }
                 } catch (IOException e) {
                     builder.append("Error : ").append(e.getMessage()).append("\n");

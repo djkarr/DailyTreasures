@@ -5,7 +5,6 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteException;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.os.Build;
 import android.util.Log;
 
 import java.io.File;
@@ -21,15 +20,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     private static final String DB_NAME = "Bible.db";
     private String DB_PATH;
     private static Context mContext;
-    public SQLiteDatabase myDataBase;
+    private SQLiteDatabase myDataBase;
 
     private final String TAG = "DBHELPER";
 
-    public static synchronized DatabaseHelper getInstance(Context ctx) {
+    static synchronized DatabaseHelper getInstance(Context ctx) {
 
         // Use the application context, which will ensure that you
         // don't accidentally leak an Activity's context.
-        // See this article for more information: http://bit.ly/6LRzfx
         if (mInstance == null) {
             mInstance = new DatabaseHelper(ctx.getApplicationContext());
         }
@@ -38,11 +36,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     private DatabaseHelper(Context ctx) {
         super(ctx, DB_NAME, null, DATABASE_VERSION);
-        if (android.os.Build.VERSION.SDK_INT >= 17)
-            DB_PATH = ctx.getApplicationInfo().dataDir + "/databases/" + DB_NAME;
-        else
-            DB_PATH = "/data/data/" + ctx.getPackageName() + "/databases/" + DB_NAME;
-        this.mContext = ctx;
+        DB_PATH = ctx.getApplicationInfo().dataDir + "/databases/" + DB_NAME;
+        mContext = ctx;
         Log.i(TAG, "DatabaseHelper: DBPATH " + DB_PATH);
         boolean dbexist = checkdatabase();
         if (dbexist) {
@@ -58,33 +53,6 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-//    public DatabaseHelper(Context context){
-//        super(context,DB_NAME,null,1);
-//        //TODO SWITCH BACK IF THIS BREAKS
-//        //DB_PATH = mContext.getDatabasePath(DB_NAME).getAbsolutePath();
-//        if (android.os.Build.VERSION.SDK_INT >= 17)
-//            DB_PATH = context.getApplicationInfo().dataDir + "/databases/" + DB_NAME;
-//        else
-//            DB_PATH = "/data/data/" + context.getPackageName() + "/databases/" + DB_NAME;
-//        this.mContext = context;
-//        Log.i(TAG, "DatabaseHelper: DBPATH " + DB_PATH);
-//        boolean dbexist = checkdatabase();
-//        if (dbexist) {
-//            System.out.println("Database exists");
-//            opendatabase();
-//        } else {
-//            System.out.println("Database doesn't exist");
-//            try {
-//                createdatabase();
-//            } catch (IOException e) {
-//                e.printStackTrace();
-//            }
-//        }
-//    }
-
-
-
-
     @Override
     public void onCreate(SQLiteDatabase db) {
 
@@ -99,10 +67,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 e.printStackTrace();
             }
         }
-
     }
 
-    public void createdatabase() throws IOException {
+    private void createdatabase() throws IOException{
         boolean dbexist = checkdatabase();
         if(dbexist) {
             System.out.println(" Database exists.");
@@ -134,15 +101,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         Log.i("Database",
                 "New database is being copied to device!");
         byte[] buffer = new byte[1024];
-        OutputStream myOutput = null;
+        OutputStream myOutput;
         int length;
         // Open your local db as the input stream
-        InputStream myInput = null;
+        InputStream myInput;
         try
         {
             myInput = mContext.getAssets().open("databases/Bible.db");
-            // transfer bytes from the inputfile to the
-            // outputfile
+            // transfer bytes from the inputfile to the outputfile
             myOutput =new FileOutputStream(DB_PATH);
             while((length = myInput.read(buffer)) > 0)
             {
@@ -160,7 +126,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    public void opendatabase() throws SQLException {
+    private void opendatabase() throws SQLException {
         //Open the database
         String mypath = DB_PATH;
         //TODO possibly change back to readwrite

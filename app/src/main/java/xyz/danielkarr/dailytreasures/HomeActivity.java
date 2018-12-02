@@ -9,8 +9,6 @@ import android.widget.Toast;
 import net.danlew.android.joda.JodaTimeAndroid;
 
 import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
 
 import butterknife.ButterKnife;
 import butterknife.OnClick;
@@ -26,8 +24,6 @@ public class HomeActivity extends AppCompatActivity {
         setContentView(R.layout.activity_home);
         ButterKnife.bind(this);
         JodaTimeAndroid.init(this);
-
-
     }
 
     @Override
@@ -36,19 +32,14 @@ public class HomeActivity extends AppCompatActivity {
         checkSchedulesExist();
     }
 
-    public void checkSchedulesExist(){
-        File fileOne = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule");
-        File fileTwo = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule2");
-        if(fileOne.exists()){
-            mScheduleOneExists = true;
-        } else{
-            mScheduleOneExists = false;
-        }
-        if(fileTwo.exists()){
-            mScheduleTwoExists = true;
-        } else {
-            mScheduleTwoExists = false;
-        }
+    private void checkSchedulesExist(){
+//        File fileOne = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule");
+//        File fileTwo = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule2");
+        File fileOne = new File(getApplicationContext().getFilesDir().getPath() + "/schedule");
+        File fileTwo = new File(getApplicationContext().getFilesDir().getPath() + "/schedule2");
+        Log.i("HOME", "checkSchedulesExist: PATH " + getApplicationContext().getFilesDir().getPath());
+        mScheduleOneExists = fileOne.exists();
+        mScheduleTwoExists = fileTwo.exists();
     }
 
     @OnClick(R.id.schedule_button)
