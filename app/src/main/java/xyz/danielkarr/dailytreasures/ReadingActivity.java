@@ -1,17 +1,22 @@
 package xyz.danielkarr.dailytreasures;
 
+import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.Parcelable;
 import android.provider.BaseColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.util.ArrayList;
@@ -46,6 +51,8 @@ public class ReadingActivity extends AppCompatActivity {
     private int mScheduleNum;
     private String mFileName;
 
+    Parcelable state;
+
     private static final String TAG = "READINGACTIVITY";
 
     static class BibleCols implements BaseColumns {
@@ -55,6 +62,9 @@ public class ReadingActivity extends AppCompatActivity {
         static final String COL_VERSE = "verse";
         static final String COL_TEXT = "versetext";
     }
+
+    @BindView(R.id.reading_scroll_view)
+    ScrollView mScrollView;
 
     @BindView(R.id.reading_view)
     TextView mTextView;
@@ -88,9 +98,6 @@ public class ReadingActivity extends AppCompatActivity {
         } catch (IOException e){
             e.printStackTrace();
         }
-        for(int i=0; i<mLines.size(); i++){
-            Log.i(TAG, "onCreate: mLines " + mLines.get(i));
-        }
 
         mTextView.setMovementMethod(new ScrollingMovementMethod());
 
@@ -118,6 +125,74 @@ public class ReadingActivity extends AppCompatActivity {
         setScheduleVariables();
         populateVerseList();
         populateTextView();
+    }
+
+    @Override
+    public void onResume(){
+        super.onResume();
+        setScroll();
+    }
+
+    @Override
+    public void onPause(){
+        super.onPause();
+        int scrollY = mScrollView.getScrollY();
+        writeScrollYToFile(scrollY);
+    }
+
+    private void writeScrollYToFile(int y){
+        String filename;
+        if(mScheduleNum == 1){
+            filename = "scrollOne";
+        } else {
+            filename = "scrollTwo";
+        }
+
+        FileOutputStream outputStream;
+        String summary = mStringDate + " " + y;
+
+        try {
+            outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
+            outputStream.write(summary.getBytes());
+            outputStream.close();
+            finish();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public void setScroll(){
+        String filename;
+        if(mScheduleNum == 1){
+            filename = "scrollOne";
+        } else {
+            filename = "scrollTwo";
+        }
+        File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + filename);
+        if(file.exists()){
+            try{
+                FileInputStream fis = this.openFileInput(filename);
+                InputStreamReader isr = new InputStreamReader(fis);
+                BufferedReader bufferedReader = new BufferedReader(isr);
+                String line = bufferedReader.readLine();
+                bufferedReader.close();
+
+                String[] parsedLine = line.split(" ");
+                if(parsedLine[0].equals(mStringDate)){
+                    final int yScroll = Integer.parseInt(parsedLine[1]);
+                    //This works for state, but not working for my case
+                    System.out.println(yScroll);
+                    mScrollView.post(new Runnable() {
+                        @Override
+                        public void run() {
+                            mScrollView.scrollTo(0, yScroll);
+                        }
+                    });
+                }
+            } catch (IOException e){
+                e.printStackTrace();
+            }
+        }
     }
 
     private void populateTextView(){
