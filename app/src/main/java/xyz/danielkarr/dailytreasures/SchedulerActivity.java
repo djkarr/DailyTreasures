@@ -26,6 +26,7 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.GregorianCalendar;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -83,7 +84,17 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         setContentView(R.layout.activity_scheduler);
         ButterKnife.bind(this);
 
-        mScheduleNum = getIntent().getIntExtra("scheduleNum",1);
+        mSchedule = Schedule.getInstance();
+        if(savedInstanceState == null){
+            mScheduleNum = getIntent().getIntExtra("scheduleNum",1);
+        } else {
+            mScheduleNum = savedInstanceState.getInt("scheduleNum");
+            mSchedule.setStartDate(dateFromString(savedInstanceState.getString("startDate")));
+            mSchedule.setEndDate(dateFromString(savedInstanceState.getString("endDate")));
+            mSchedule.setStartingBook(savedInstanceState.getString("startingBook"));
+            mSchedule.setEndingBook(savedInstanceState.getString("endingBook"));
+        }
+
         if(mScheduleNum == 1){
             mFileName = "schedule";
             setTitle("Schedule " + 1);
@@ -91,7 +102,8 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
             mFileName = "schedule2";
             setTitle("Schedule " + 2);
         }
-        mSchedule = Schedule.getInstance();
+
+
         mStartDateButton.setText(dateToString(mSchedule.getStartDate()));
         mEndDateButton.setText(dateToString(mSchedule.getEndDate()));
         mStartBookButton.setText(mSchedule.getStartingBook());
@@ -107,7 +119,6 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
             e.printStackTrace();
         }
         populateSummary();
-
     }
 
    @Override
@@ -191,6 +202,15 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         } else {
             Toast.makeText(this,"Start date must come before end date!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    protected void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        outState.putString("startingBook", mSchedule.getStartingBook());
+        outState.putString("endingBook", mSchedule.getEndingBook());
+        outState.putString("startDate", dateToString(mSchedule.getStartDate()));
+        outState.putString("endDate", dateToString(mSchedule.getEndDate()));
+        outState.putInt("scheduleNum", mScheduleNum);
     }
 
     private void populateSummary(){
@@ -283,6 +303,16 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         int month = calendar.get(Calendar.MONTH)+1;
         int day = calendar.get(Calendar.DAY_OF_MONTH);
         return month + "/" + day + "/" + year;
+    }
+
+    private Date dateFromString(String dateString){
+        String[] line = dateString.split("/");
+        Calendar c = GregorianCalendar.getInstance();
+        int month = Integer.parseInt(line[0]) -1;
+        int day = Integer.parseInt(line[1]);
+        int year = Integer.parseInt(line[2]);
+        c.set(year,month,day);
+        return c.getTime();
     }
 
     public void onDatePicked(int month, int day, int year, DatePickerFragment.FragmentType fType){

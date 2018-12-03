@@ -105,14 +105,6 @@ public class ReadingActivity extends AppCompatActivity {
         mDB = mDbHelper.getReadableDatabase();
         Date today = new Date();
         mStringDate = dateToString(today);
-        // With new summary line as first line, start at index 1
-        for(int i=1; i<mLines.size(); i++){
-            if(mLines.get(i).startsWith(mStringDate)){
-                mTodayIndex = i;
-                break;
-            }
-        }
-
         mBookAbrList = new ArrayList<>(Arrays.asList(
                 "Gen","Exo","Lev","Num","Deu","Jsh","Jdg","Rut","1Sa","2Sa","1Ki","2Ki",
                 "1Ch","2Ch","Ezr","Neh","Est","Job","Psa","Prv","Ecc","SoS","Isa","Jer",
@@ -122,9 +114,21 @@ public class ReadingActivity extends AppCompatActivity {
                 "2Pe","1Jo","2Jo","3Jo","Jud","Rev"
         ));
 
-        setScheduleVariables();
-        populateVerseList();
-        populateTextView();
+        if(savedInstanceState == null){
+            // With new summary line as first line, start at index 1
+            for(int i=1; i<mLines.size(); i++){
+                if(mLines.get(i).startsWith(mStringDate)){
+                    mTodayIndex = i;
+                    break;
+                }
+            }
+            setScheduleVariables();
+            populateVerseList();
+            populateTextView();
+        } else {
+            mTextView.setText(savedInstanceState.getCharSequence("verseText"));
+        }
+
     }
 
     @Override
@@ -138,6 +142,12 @@ public class ReadingActivity extends AppCompatActivity {
         super.onPause();
         int scrollY = mScrollView.getScrollY();
         writeScrollYToFile(scrollY);
+    }
+
+    protected void onSaveInstanceState(Bundle outState){
+        super.onSaveInstanceState(outState);
+        CharSequence verseText = mTextView.getText();
+        outState.putCharSequence("verseText", verseText);
     }
 
     private void writeScrollYToFile(int y){
@@ -155,7 +165,7 @@ public class ReadingActivity extends AppCompatActivity {
             outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
             outputStream.write(summary.getBytes());
             outputStream.close();
-            finish();
+//            finish();
         } catch (Exception e) {
             e.printStackTrace();
         }
