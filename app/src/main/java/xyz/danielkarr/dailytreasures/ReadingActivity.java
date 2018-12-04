@@ -3,7 +3,6 @@ package xyz.danielkarr.dailytreasures;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-import android.os.Parcelable;
 import android.provider.BaseColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -50,8 +49,6 @@ public class ReadingActivity extends AppCompatActivity {
 
     private int mScheduleNum;
     private String mFileName;
-
-    Parcelable state;
 
     private static final String TAG = "READINGACTIVITY";
 
@@ -131,12 +128,18 @@ public class ReadingActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Calls setScroll to bring the reader back to their place.
+     */
     @Override
     public void onResume(){
         super.onResume();
         setScroll();
     }
 
+    /**
+     * Saves scroll position when the user leaves so that they can resume their reading.
+     */
     @Override
     public void onPause(){
         super.onPause();
@@ -144,12 +147,20 @@ public class ReadingActivity extends AppCompatActivity {
         writeScrollYToFile(scrollY);
     }
 
+    /**
+     * Saves today's reading portion's text in the event of screen rotation.
+     * @param outState
+     */
     protected void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
         CharSequence verseText = mTextView.getText();
         outState.putCharSequence("verseText", verseText);
     }
 
+    /**
+     * Writes the Y scroll value to the appropriate file.
+     * @param y the Y scroll value to save.
+     */
     private void writeScrollYToFile(int y){
         String filename;
         if(mScheduleNum == 1){
@@ -165,12 +176,14 @@ public class ReadingActivity extends AppCompatActivity {
             outputStream = openFileOutput(filename, Context.MODE_PRIVATE);
             outputStream.write(summary.getBytes());
             outputStream.close();
-//            finish();
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Retrieves the Y scroll position from appropriate file and scrolls to that position in the scrollView.
+     */
     public void setScroll(){
         String filename;
         if(mScheduleNum == 1){
@@ -190,12 +203,10 @@ public class ReadingActivity extends AppCompatActivity {
                 String[] parsedLine = line.split(" ");
                 if(parsedLine[0].equals(mStringDate)){
                     final int yScroll = Integer.parseInt(parsedLine[1]);
-                    //This works for state, but not working for my case
-                    System.out.println(yScroll);
                     mScrollView.post(new Runnable() {
                         @Override
                         public void run() {
-                            mScrollView.scrollTo(0, yScroll);
+                            mScrollView.smoothScrollTo(0, yScroll);
                         }
                     });
                 }
@@ -205,6 +216,9 @@ public class ReadingActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Builds a string from the verseList and sets the text on textView.
+     */
     private void populateTextView(){
         StringBuilder builder = new StringBuilder();
         for (String verse : mCompleteVerseList) {
@@ -214,6 +228,11 @@ public class ReadingActivity extends AppCompatActivity {
         mTextView.setText(builder.toString());
     }
 
+    /**
+     * Turns a date object into a useful string format.
+     * @param date to be converted into string.
+     * @return string representation of the date.
+     */
     public String dateToString(Date date){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -223,10 +242,18 @@ public class ReadingActivity extends AppCompatActivity {
         return month + "/" + day + "/" + year;
     }
 
+    /**
+     * Gets the book abbreviation to display in the textView.
+     * @param booknum book index to retrieve, passed as 1 based.
+     * @return the book abbreviation.
+     */
     public String getAbbreviation(int booknum){
         return mBookAbrList.get(booknum-1);
     }
 
+    /**
+     * Parses out today's schedule line and assigns them to the proper variables used for querying DB.
+     */
     private void setScheduleVariables() {
         String[] splitLine = mLines.get(mTodayIndex).split(" ");
         mSBook = Integer.parseInt(splitLine[1]);
@@ -239,12 +266,20 @@ public class ReadingActivity extends AppCompatActivity {
         mIsSingleChap = mIsSingleBook && mSChap == mEChap;
     }
 
+    /**
+     * Creates SQL query for use in the case that today's reading portion is all from the same chapter.
+     * @return a string of the query.
+     */
     private String singleChapterQuery(){
         return "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mSBook +
                 " and " + BibleCols.COL_CHAPTER + " = " + mSChap + " and " + BibleCols.COL_VERSE + " >= " + mSVerse +
                 " and " + BibleCols.COL_VERSE + " <= " + mEVerse;
     }
 
+    /**
+     * Creates Sql query for use in the case that today's reading portion is all from the same book, but different chapters.
+     * @return a string of the query.
+     */
     private String singleBookQuery(){
         int spreadAcrossChapters = mEChap - mSChap + 1;
         // Two chapters, union with two queries
@@ -263,6 +298,10 @@ public class ReadingActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Creates Sql query for use in the case that today's reading portion spans more than one book.
+     * @return a string of the query.
+     */
     private String multipleBookQuery(){
         String q1 = "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mSBook +
                 " and " + BibleCols.COL_CHAPTER + " = " + mSChap + " and " + BibleCols.COL_VERSE + " >= " + mSVerse +
@@ -277,6 +316,9 @@ public class ReadingActivity extends AppCompatActivity {
         return q1 + q2 + q3 + q4;
     }
 
+    /**
+     * Queries DB and populates mCompleteVerseList with all of the day's verses.
+     */
     private void populateVerseList(){
         String selectionQuery;
         if(mIsSingleChap){

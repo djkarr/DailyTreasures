@@ -33,11 +33,8 @@ public class HomeActivity extends AppCompatActivity {
     }
 
     private void checkSchedulesExist(){
-        //File fileOne = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule");
-        //File fileTwo = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule2");
         File fileOne = new File(getApplicationContext().getFilesDir().getPath() + "/schedule");
         File fileTwo = new File(getApplicationContext().getFilesDir().getPath() + "/schedule2");
-        Log.i("HOME", "checkSchedulesExist: PATH " + getApplicationContext().getFilesDir().getPath());
         mScheduleOneExists = fileOne.exists();
         mScheduleTwoExists = fileTwo.exists();
     }

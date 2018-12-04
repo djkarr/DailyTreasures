@@ -22,7 +22,7 @@
         <activity android:name=".SchedulerActivity" />
         <activity android:name=".BookListActivity" />
         <activity android:name=".ReadingActivity" />
-        <activity android:name=".EMannaActivity"></activity>
+        <activity android:name=".EMannaActivity" />
     </application>
 
 </manifest>

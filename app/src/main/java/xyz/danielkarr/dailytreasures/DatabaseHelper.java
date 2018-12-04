@@ -14,7 +14,7 @@ import java.io.InputStream;
 import java.io.OutputStream;
 
 
-public class DatabaseHelper extends SQLiteOpenHelper {
+class DatabaseHelper extends SQLiteOpenHelper {
     private static DatabaseHelper mInstance = null;
     private static final int DATABASE_VERSION = 1;
     private static final String DB_NAME = "Bible.db";

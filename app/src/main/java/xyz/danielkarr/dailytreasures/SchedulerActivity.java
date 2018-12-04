@@ -61,6 +61,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
 
     private int mScheduleNum;
     private String mFileName;
+    private boolean mWarningBeenShown;
 
     private static final String TAG = "SCHEDULER_ACTIVITY";
 
@@ -103,7 +104,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
             setTitle("Schedule " + 2);
         }
 
-
+        mWarningBeenShown = false;
         mStartDateButton.setText(dateToString(mSchedule.getStartDate()));
         mEndDateButton.setText(dateToString(mSchedule.getEndDate()));
         mStartBookButton.setText(mSchedule.getStartingBook());
@@ -124,10 +125,11 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
    @Override
    protected void onResume(){
         super.onResume();
-        File file = new File("/data/data/xyz.danielkarr.dailytreasures/files/" +mFileName);
-        if(file.exists()){
+        File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + mFileName);
+        if(file.exists() && !mWarningBeenShown){
             Toast.makeText(this,"WARNING: Creating a new schedule will override the old one! Hit " +
                     "the back button to cancel.", Toast.LENGTH_LONG).show();
+            mWarningBeenShown = true;
         }
    }
 
@@ -135,17 +137,20 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     protected void onActivityResult(int requestCode, int resultCode, Intent data)
     {
         super.onActivityResult(requestCode, resultCode, data);
-        // check if the request code is same as what is passed  here it is 2
-        if(requestCode==1)
-        {
-            String message=data.getStringExtra("ReturnedBook");
-            mStartBookButton.setText(message);
-            mSchedule.setStartingBook(message);
-        } else if (requestCode==2){
-            String message=data.getStringExtra("ReturnedBook");
-            mEndBookButton.setText(message);
-            mSchedule.setEndingBook(message);
+        if(data != null){
+            // check if the request code is same as what is passed  here it is 2
+            if(requestCode==1)
+            {
+                String message=data.getStringExtra("ReturnedBook");
+                mStartBookButton.setText(message);
+                mSchedule.setStartingBook(message);
+            } else if (requestCode==2){
+                String message=data.getStringExtra("ReturnedBook");
+                mEndBookButton.setText(message);
+                mSchedule.setEndingBook(message);
+            }
         }
+
     }
 
     @OnClick(R.id.start_book_button)
@@ -214,32 +219,33 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     }
 
     private void populateSummary(){
-        File fileOne = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule");
+        File fileOne = new File(getApplicationContext().getFilesDir().getPath() + "/" + "schedule");
         String scheduleOne, scheduleTwo;
         if(fileOne.exists()){
             scheduleOne = getSummaryLine("schedule");
             scheduleOne = parseSummaryLine(scheduleOne,1);
             mScheduleOneInfo.setText(scheduleOne);
         }else {
-            mScheduleOneInfo.setText(String.format("Schedule 1\n\nDoesn't Exist"));
+            mScheduleOneInfo.setText("Schedule 1\n\nDoesn't Exist");
         }
-        File fileTwo = new File("/data/data/xyz.danielkarr.dailytreasures/files/schedule2");
+        File fileTwo = new File(getApplicationContext().getFilesDir().getPath() + "/" + "schedule2");
+        Log.i(TAG, "populateSummary: path " + getApplicationContext().getFilesDir().getPath() + "/" + mFileName);
         if(fileTwo.exists()){
             scheduleTwo = getSummaryLine("schedule2");
             scheduleTwo = parseSummaryLine(scheduleTwo,2);
             mScheduleTwoInfo.setText(scheduleTwo);
         } else {
-            mScheduleTwoInfo.setText(String.format("Schedule 2\n\nDoesn't Exist"));
+            mScheduleTwoInfo.setText("Schedule 2\n\nDoesn't Exist");
         }
     }
 
     private String parseSummaryLine(String summaryLine, int num){
         String[] s = summaryLine.split(" ");
         if(s.length == 4){
-            return  "Schedule " + num + "\n\n" + "Start Date: " + s[0] + "\n\n" + "End Date: " + s[1] + "\n\n" + "Starting Book: " + s[2] +
+            return  "Schedule " + num + "\n\n\n" + "Start Date: " + s[0] + "\n\n" + "End Date: " + s[1] + "\n\n" + "Starting Book: " + s[2] +
                     "\n\n" + "Ending Book: " + s[3];
         } else {
-            return  "Schedule " + num + "\n\n" + "Start Date: " + s[0] + "\n\n" + "End Date: " + s[1] + "\n\n" + "Starting Book: " + s[2] +
+            return  "Schedule " + num + "\n\n\n" + "Start Date: " + s[0] + "\n\n" + "End Date: " + s[1] + "\n\n" + "Starting Book: " + s[2] +
                     "\n\n" + "Ending Book: " + s[3] + " " + s[4];
         }
     }
@@ -424,7 +430,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         String selectQuery = "SELECT " + MasterEntry.COLUMN_NAME_NUMVERSES + " FROM " + MasterEntry.TABLE_NAME + " WHERE "
                 + MasterEntry.COLUMN_NAME_BOOK + " = " + bookNum + " AND " + MasterEntry.COLUMN_NAME_CHAPTER + " = " + chapter;
         Cursor c = mDB.rawQuery(selectQuery, null);
-        int verses = 0;
+        int verses;
         if (c.moveToFirst()) {
             verses = c.getInt(0);
             c.close();

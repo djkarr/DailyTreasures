@@ -13,5 +13,5 @@
     <string name="start_book_label">Start Book</string>
     <string name="end_book_label">End Book</string>
     <string name="emanna_button">eManna</string>
-    <string name="loading">Please wait, fetching data...</string>
+    <string name="loading">Please wait, fetching data…</string>
 </resources>
