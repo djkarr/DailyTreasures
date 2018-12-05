@@ -6,6 +6,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.provider.BaseColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
+import android.text.Layout;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.ScrollView;
@@ -143,7 +144,7 @@ public class ReadingActivity extends AppCompatActivity {
     @Override
     public void onPause(){
         super.onPause();
-        int scrollY = mScrollView.getScrollY();
+        float scrollY = getScrollSpot();
         writeScrollYToFile(scrollY);
     }
 
@@ -157,11 +158,7 @@ public class ReadingActivity extends AppCompatActivity {
         outState.putCharSequence("verseText", verseText);
     }
 
-    /**
-     * Writes the Y scroll value to the appropriate file.
-     * @param y the Y scroll value to save.
-     */
-    private void writeScrollYToFile(int y){
+    private void writeScrollYToFile(float y){
         String filename;
         if(mScheduleNum == 1){
             filename = "scrollOne";
@@ -181,9 +178,6 @@ public class ReadingActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Retrieves the Y scroll position from appropriate file and scrolls to that position in the scrollView.
-     */
     public void setScroll(){
         String filename;
         if(mScheduleNum == 1){
@@ -202,11 +196,11 @@ public class ReadingActivity extends AppCompatActivity {
 
                 String[] parsedLine = line.split(" ");
                 if(parsedLine[0].equals(mStringDate)){
-                    final int yScroll = Integer.parseInt(parsedLine[1]);
+                    final float yScroll = Float.parseFloat(parsedLine[1]);
                     mScrollView.post(new Runnable() {
                         @Override
                         public void run() {
-                            mScrollView.smoothScrollTo(0, yScroll);
+                            setScrollSpot(yScroll);
                         }
                     });
                 }
@@ -214,6 +208,30 @@ public class ReadingActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
+    }
+
+    private float getScrollSpot() {
+        int y = mScrollView.getScrollY();
+        Layout layout = mTextView.getLayout();
+        int topPadding = -layout.getTopPadding();
+        if (y <= topPadding) {
+            return (float) (topPadding - y) / mTextView.getLineHeight();
+        }
+
+        int line = layout.getLineForVertical(y - 1) + 1;
+        int offset = layout.getLineStart(line);
+        int above = layout.getLineTop(line) - y;
+        return offset + (float) above / mTextView.getLineHeight();
+    }
+
+    private void setScrollSpot(float spot) {
+        int offset = (int) spot;
+        int above = (int) ((spot - offset) * mTextView.getLineHeight());
+        Layout layout = mTextView.getLayout();
+        int line = layout.getLineForOffset(offset);
+        int y = (line == 0 ? -layout.getTopPadding() : layout.getLineTop(line))
+                - above;
+        mScrollView.scrollTo(0, y);
     }
 
     /**

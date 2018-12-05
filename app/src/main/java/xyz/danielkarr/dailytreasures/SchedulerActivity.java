@@ -88,12 +88,14 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         mSchedule = Schedule.getInstance();
         if(savedInstanceState == null){
             mScheduleNum = getIntent().getIntExtra("scheduleNum",1);
+            mWarningBeenShown = false;
         } else {
             mScheduleNum = savedInstanceState.getInt("scheduleNum");
             mSchedule.setStartDate(dateFromString(savedInstanceState.getString("startDate")));
             mSchedule.setEndDate(dateFromString(savedInstanceState.getString("endDate")));
             mSchedule.setStartingBook(savedInstanceState.getString("startingBook"));
             mSchedule.setEndingBook(savedInstanceState.getString("endingBook"));
+            mWarningBeenShown = savedInstanceState.getBoolean("warning");
         }
 
         if(mScheduleNum == 1){
@@ -104,7 +106,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
             setTitle("Schedule " + 2);
         }
 
-        mWarningBeenShown = false;
+
         mStartDateButton.setText(dateToString(mSchedule.getStartDate()));
         mEndDateButton.setText(dateToString(mSchedule.getEndDate()));
         mStartBookButton.setText(mSchedule.getStartingBook());
@@ -216,6 +218,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         outState.putString("startDate", dateToString(mSchedule.getStartDate()));
         outState.putString("endDate", dateToString(mSchedule.getEndDate()));
         outState.putInt("scheduleNum", mScheduleNum);
+        outState.putBoolean("warning",mWarningBeenShown);
     }
 
     private void populateSummary(){
