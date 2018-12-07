@@ -201,6 +201,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
                 calcuateDailyPortions();
                 mDbHelper.close();
                 mDB.close();
+                deleteScrollFile();
                 writeToFile();
             } else {
                 Toast.makeText(this,"You need at least 1 verse per day, right now you have " + mTotalVerses
@@ -209,6 +210,20 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         } else {
             Toast.makeText(this,"Start date must come before end date!", Toast.LENGTH_SHORT).show();
         }
+    }
+
+    void deleteScrollFile(){
+        String filename;
+        if(mScheduleNum == 1){
+            filename = "scrollOne";
+        } else {
+            filename = "scrollTwo";
+        }
+        File file = new File(getApplicationContext().getFilesDir().getPath() + "/" + filename);
+        if(file.exists()) {
+            file.delete();
+        }
+
     }
 
     protected void onSaveInstanceState(Bundle outState){

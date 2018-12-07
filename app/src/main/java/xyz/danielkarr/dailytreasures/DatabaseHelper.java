@@ -143,7 +143,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
     @Override
     public void onOpen(SQLiteDatabase db) {
         super.onOpen(db);
-        db.disableWriteAheadLogging();
+//        db.disableWriteAheadLogging();
     }
 
 }

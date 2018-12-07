@@ -3,6 +3,7 @@ package xyz.danielkarr.dailytreasures;
 import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.os.AsyncTask;
 import android.provider.BaseColumns;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -121,21 +122,13 @@ public class ReadingActivity extends AppCompatActivity {
                 }
             }
             setScheduleVariables();
+            mTextView.setText(("Reading from database, please wait..."));
             populateVerseList();
-            populateTextView();
         } else {
             mTextView.setText(savedInstanceState.getCharSequence("verseText"));
+            setScroll();
         }
 
-    }
-
-    /**
-     * Calls setScroll to bring the reader back to their place.
-     */
-    @Override
-    public void onResume(){
-        super.onResume();
-        setScroll();
     }
 
     /**
@@ -235,18 +228,6 @@ public class ReadingActivity extends AppCompatActivity {
     }
 
     /**
-     * Builds a string from the verseList and sets the text on textView.
-     */
-    private void populateTextView(){
-        StringBuilder builder = new StringBuilder();
-        for (String verse : mCompleteVerseList) {
-            builder.append(verse).append("\n");
-        }
-
-        mTextView.setText(builder.toString());
-    }
-
-    /**
      * Turns a date object into a useful string format.
      * @param date to be converted into string.
      * @return string representation of the date.
@@ -316,50 +297,96 @@ public class ReadingActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Creates Sql query for use in the case that today's reading portion spans more than one book.
-     * @return a string of the query.
-     */
-    private String multipleBookQuery(){
-        String q1 = "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mSBook +
+
+    private String wholeBookQuery(int bookIndex){
+        return "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + bookIndex;
+    }
+
+
+    private String remainderOfBookQuery(){
+        return "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mSBook +
                 " and " + BibleCols.COL_CHAPTER + " = " + mSChap + " and " + BibleCols.COL_VERSE + " >= " + mSVerse +
                 " union " + "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mSBook +
-                " and " + BibleCols.COL_CHAPTER + " > " + mSChap + " union ";
-        String q2 = "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " > " + mSBook + " and " +
-                BibleCols.COL_BOOK + " < " + mEBook + " union ";
-        String q3 = "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mEBook + " and " +
-                BibleCols.COL_CHAPTER + " < " + mEChap + " union ";
-        String q4 = "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mEBook + " and " +
+                " and " + BibleCols.COL_CHAPTER + " > " + mSChap;
+    }
+
+    private String endBookQuery(){
+        return "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mEBook + " and " +
                 BibleCols.COL_CHAPTER + " = " + mEChap + " and " + BibleCols.COL_VERSE + " <= " + mEVerse;
-        return q1 + q2 + q3 + q4;
     }
 
     /**
      * Queries DB and populates mCompleteVerseList with all of the day's verses.
      */
     private void populateVerseList(){
-        String selectionQuery;
+        String selectionQuery = "";
         if(mIsSingleChap){
             selectionQuery = singleChapterQuery();
         } else if (mIsSingleBook){
             selectionQuery = singleBookQuery();
         } else {
-            selectionQuery = multipleBookQuery();
+            boolean finished = false;
+            for(int i=mSBook; !finished; i = (i+1) % 66){
+                if(i == mSBook){
+                    selectionQuery = remainderOfBookQuery() + " union ";
+                } else if(i == mEBook){
+                    selectionQuery += endBookQuery();
+                    finished = true;
+                } else {
+                    selectionQuery += wholeBookQuery(i) + " union ";
+                }
+            }
+        }
+        callBackgroundQuery(selectionQuery);
+    }
+
+    void callBackgroundQuery(String query){
+        backgroundQuery BQ = new backgroundQuery(this);
+        BQ.execute(query);
+    }
+
+    private class backgroundQuery extends AsyncTask<String, Void, String>{
+        private ReadingActivity mReadingActivity;
+
+        public backgroundQuery(ReadingActivity ra){
+            mReadingActivity = ra;
         }
 
-        Cursor c = mDB.rawQuery(selectionQuery, null);
-        String chap, verse, text;
-        int bookNum;
-        c.moveToFirst();
-        while (!c.isAfterLast()) {
-            bookNum = c.getInt(0);
-            chap = c.getString(1);
-            verse = c.getString(2);
-            text = c.getString(3);
-            String completeVerse = getAbbreviation(bookNum) + " " + chap + ":" + verse + " " + text;
-            mCompleteVerseList.add(completeVerse);
-            c.moveToNext();
+        @Override
+        protected String doInBackground(String... query) {
+            System.out.println("Getting DB Instance");
+            SQLiteDatabase db = mDbHelper.getInstance(getApplicationContext()).getReadableDatabase();
+            System.out.println("Querying DB");
+            Cursor c = db.rawQuery(query[0],null);
+            StringBuilder builder = new StringBuilder();
+            String chap, verse, text;
+            int bookNum;
+            System.out.println("Moving to first and parsing lines");
+            c.moveToFirst();
+            while (!c.isAfterLast()) {
+                bookNum = c.getInt(0);
+                chap = c.getString(1);
+                verse = c.getString(2);
+                text = c.getString(3);
+                String completeVerse = getAbbreviation(bookNum) + " " + chap + ":" + verse + " " + text;
+                builder.append(completeVerse).append("\n");
+                c.moveToNext();
+            }
+            System.out.println("Finished parsing, starting builder.toString()");
+            String completeText = builder.toString();
+            System.out.println("Finished building string, returning and setting text");
+            return completeText;
         }
-        c.close();
+
+        @Override
+        protected void onPostExecute(String result) {
+            super.onPostExecute(result);
+            System.out.println("Setting text");
+            mTextView.setText(result);
+//            mTextView.setText("Done");
+            System.out.println("Setting scroll");
+            mReadingActivity.setScroll();
+            System.out.println("Finished setting scroll");
+        }
     }
 }
