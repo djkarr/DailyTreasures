@@ -18,7 +18,7 @@ class DatabaseHelper extends SQLiteOpenHelper {
     private static DatabaseHelper mInstance = null;
     private static final int DATABASE_VERSION = 1;
     private static final String DB_NAME = "Bible.db";
-    private String DB_PATH;
+    private final String DB_PATH;
     private static Context mContext;
     private SQLiteDatabase myDataBase;
 
@@ -129,21 +129,6 @@ class DatabaseHelper extends SQLiteOpenHelper {
     private void opendatabase() throws SQLException {
         //Open the database
         String mypath = DB_PATH;
-        //TODO possibly change back to readwrite
         myDataBase = SQLiteDatabase.openDatabase(mypath, null, SQLiteDatabase.OPEN_READONLY);
     }
-
-//    public synchronized void close() {
-//        if(myDataBase != null) {
-//            myDataBase.close();
-//        }
-//        super.close();
-//    }
-
-    @Override
-    public void onOpen(SQLiteDatabase db) {
-        super.onOpen(db);
-//        db.disableWriteAheadLogging();
-    }
-
 }

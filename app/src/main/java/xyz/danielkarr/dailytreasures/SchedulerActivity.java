@@ -106,7 +106,6 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
             setTitle("Schedule " + 2);
         }
 
-
         mStartDateButton.setText(dateToString(mSchedule.getStartDate()));
         mEndDateButton.setText(dateToString(mSchedule.getEndDate()));
         mStartBookButton.setText(mSchedule.getStartingBook());
@@ -117,7 +116,6 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         try{
             mDbHelper = DatabaseHelper.getInstance(this);
             mDB = mDbHelper.getReadableDatabase();
-            Log.i(TAG, "onCreate: GOT READABLE DB");
         } catch (Error e){
             e.printStackTrace();
         }
@@ -212,7 +210,10 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         }
     }
 
-    void deleteScrollFile(){
+    /**
+     * Deletes appropriate scroll file when creating a new schedule.
+     */
+    private void deleteScrollFile(){
         String filename;
         if(mScheduleNum == 1){
             filename = "scrollOne";
@@ -236,6 +237,9 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         outState.putBoolean("warning",mWarningBeenShown);
     }
 
+    /**
+     * Populates schedule info views.
+     */
     private void populateSummary(){
         File fileOne = new File(getApplicationContext().getFilesDir().getPath() + "/" + "schedule");
         String scheduleOne, scheduleTwo;
@@ -247,7 +251,6 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
             mScheduleOneInfo.setText("Schedule 1\n\nDoesn't Exist");
         }
         File fileTwo = new File(getApplicationContext().getFilesDir().getPath() + "/" + "schedule2");
-        Log.i(TAG, "populateSummary: path " + getApplicationContext().getFilesDir().getPath() + "/" + mFileName);
         if(fileTwo.exists()){
             scheduleTwo = getSummaryLine("schedule2");
             scheduleTwo = parseSummaryLine(scheduleTwo,2);
@@ -257,6 +260,12 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         }
     }
 
+    /**
+     * Parses out the summary line and constructs string for displaying schedule info.
+     * @param summaryLine string to be parsed.
+     * @param num the schedule number.
+     * @return string to display for schedule summary.
+     */
     private String parseSummaryLine(String summaryLine, int num){
         String[] s = summaryLine.split(" ");
         if(s.length == 4){
@@ -268,6 +277,11 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         }
     }
 
+    /**
+     * Returns the first line, AKA summary line from the appropriate file.
+     * @param file to read from.
+     * @return string of summary line.
+     */
     private String getSummaryLine(String file){
         String schedule = "";
         try{
@@ -282,6 +296,9 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         return schedule;
     }
 
+    /**
+     * Write mDailyList out to the appropriate file.
+     */
     private void writeToFile(){
         String filename = mFileName;
         FileOutputStream outputStream;
@@ -302,6 +319,9 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         }
     }
 
+    /**
+     * Clears the schedule ArrayLists.
+     */
     private void clearSchedule(){
         mDailyList.clear();
         mDailyCountList.clear();
@@ -309,9 +329,9 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
 
     /**
      * Check if date alpha comes before date omega
-     * @param alpha
-     * @param omega
-     * @return
+     * @param alpha first date
+     * @param omega end date
+     * @return true if alpha comes before omega
      */
     private boolean isDateBeforeDate(Date alpha, Date omega){
         LocalDate start = LocalDate.fromDateFields(alpha);
@@ -320,6 +340,11 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         return daysbetween >= 1;
     }
 
+    /**
+     * Constructs string representation of date (MM/(d)d/yyyy)
+     * @param date to turn into string.
+     * @return string of date.
+     */
     private String dateToString(Date date){
         Calendar calendar = Calendar.getInstance();
         calendar.setTime(date);
@@ -329,6 +354,11 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         return month + "/" + day + "/" + year;
     }
 
+    /**
+     * Creates Date object from string representation of date.
+     * @param dateString to turn into Date object.
+     * @return Date object.
+     */
     private Date dateFromString(String dateString){
         String[] line = dateString.split("/");
         Calendar c = GregorianCalendar.getInstance();
@@ -339,6 +369,14 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
         return c.getTime();
     }
 
+    /**
+     * When user selects a start/end date, sets it to schedule object and assigns text of
+     * respective button.
+     * @param month int month.
+     * @param day int day.
+     * @param year int year.
+     * @param fType DatePicker fragment.
+     */
     public void onDatePicked(int month, int day, int year, DatePickerFragment.FragmentType fType){
         Calendar cal = Calendar.getInstance();
         cal.set(year,month,day);
@@ -353,7 +391,10 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     }
 
 
-
+    /**
+     * Calculates the daily portion schedule using DailyPortion objects and populates mDailyList
+     * with the daily portions.
+     */
     private void calcuateDailyPortions() {
         int sBook = getBookIndex(mSchedule.getStartingBook());
         LocalDate sDate = new LocalDate(mSchedule.getStartDate());
@@ -413,9 +454,9 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     }
 
     /**
-     * Takes a daily portion, increments verse, possibly to new chapter or book, and assigns date 1 day later
-     * @param endPortion
-     * @return
+     * Takes a finished daily portion, and uses its ending values to create the next day's portion.
+     * @param endPortion the completed portion to be used as the start of the next portion.
+     * @return new portion with starting values assigned.
      */
     private DailyPortion getNewStartingPortion(DailyPortion endPortion) {
         int eVerse = endPortion.getEndingVerse() + 1;
@@ -440,9 +481,9 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
 
     /**
      * Get the number of verses in a particular chapter.
-     * @param bookNum
-     * @param chapter
-     * @return
+     * @param bookNum book index.
+     * @param chapter chapter index.
+     * @return int number of verses in a chapter.
      */
     private int getNumVersesInChapter(int bookNum, int chapter){
         String selectQuery = "SELECT " + MasterEntry.COLUMN_NAME_NUMVERSES + " FROM " + MasterEntry.TABLE_NAME + " WHERE "

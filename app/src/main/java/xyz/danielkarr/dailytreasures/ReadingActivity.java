@@ -12,7 +12,6 @@ import android.os.Bundle;
 import android.text.Layout;
 import android.text.PrecomputedText;
 import android.text.method.ScrollingMovementMethod;
-import android.util.Log;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -23,8 +22,6 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
-import java.lang.ref.Reference;
-import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -37,14 +34,13 @@ import butterknife.ButterKnife;
 public class ReadingActivity extends AppCompatActivity {
     private List<String> mLines;
     private ArrayList<String> mBookAbrList;
-    private ArrayList<String> mCompleteVerseList;
 
     private DatabaseHelper mDbHelper;
     private SQLiteDatabase mDB;
     private String mStringDate;
     private int mTodayIndex;
 
-    // Schedule Variables
+    // Schedule Variables, S for "starting" : E for "ending"
     private int mSBook;
     private int mSChap;
     private int mSVerse;
@@ -53,6 +49,8 @@ public class ReadingActivity extends AppCompatActivity {
     private int mEVerse;
     private boolean mIsSingleChap;
     private boolean mIsSingleBook;
+    // Wraps from Revelation --> Genesis
+    private boolean mWrapsAround;
 
     private int mScheduleNum;
     private String mFileName;
@@ -88,7 +86,6 @@ public class ReadingActivity extends AppCompatActivity {
             setTitle("Reading Portion " + 2);
         }
         mLines = new ArrayList<>();
-        mCompleteVerseList = new ArrayList<>();
 
         try{
             FileInputStream fis = this.openFileInput(mFileName);
@@ -126,9 +123,7 @@ public class ReadingActivity extends AppCompatActivity {
                     break;
                 }
             }
-            System.out.println("TODAY INDEX " + mTodayIndex);
             if(mTodayIndex == 0){
-                System.out.println("Inside IF");
                 invalidSchedule();
             } else {
                 setScheduleVariables();
@@ -143,16 +138,17 @@ public class ReadingActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * Alerts user that their schedule is no longer current and finishes the activity.
+     */
     void invalidSchedule(){
-        System.out.println("Iinside invalidSchedule");
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogStyle);
-        builder.setTitle("Alert").setMessage("This schedule has ended, please go make a new one.").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setTitle("Completed Schedule").setMessage("This reading schedule has ended, please go make a new one.").setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 finish();
             }
         }).show();
-//        finish();
     }
 
     /**
@@ -175,6 +171,10 @@ public class ReadingActivity extends AppCompatActivity {
         outState.putCharSequence("verseText", verseText);
     }
 
+    /**
+     * Writes the scroll position out to the appropriate file.
+     * @param y scroll position y float value.
+     */
     private void writeScrollYToFile(float y){
         String filename;
         if(mScheduleNum == 1){
@@ -195,6 +195,10 @@ public class ReadingActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Reads the saved scroll position from the appropriate file and calls setScrollSpot
+     * with that value.
+     */
     public void setScroll(){
         String filename;
         if(mScheduleNum == 1){
@@ -227,6 +231,10 @@ public class ReadingActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * Calculates the reader's current scroll position.
+     * @return scroll position y value.
+     */
     private float getScrollSpot() {
         int y = mScrollView.getScrollY();
         Layout layout = mTextView.getLayout();
@@ -241,6 +249,10 @@ public class ReadingActivity extends AppCompatActivity {
         return offset + (float) above / mTextView.getLineHeight();
     }
 
+    /**
+     * Calculates scroll position and calls scrollTo on the scrollview.
+     * @param spot the y value to scroll to.
+     */
     private void setScrollSpot(float spot) {
         int offset = (int) spot;
         int above = (int) ((spot - offset) * mTextView.getLineHeight());
@@ -287,6 +299,7 @@ public class ReadingActivity extends AppCompatActivity {
         mEVerse = Integer.parseInt(splitLine[6]);
         mIsSingleBook = mSBook == mEBook;
         mIsSingleChap = mIsSingleBook && mSChap == mEChap;
+        mWrapsAround = mSBook > mEBook;
     }
 
     /**
@@ -321,12 +334,19 @@ public class ReadingActivity extends AppCompatActivity {
         }
     }
 
-
+    /**
+     * Creates sql query to retrieve a single, complete book.
+     * @param bookIndex index of the book to query.
+     * @return a string of the query.
+     */
     private String wholeBookQuery(int bookIndex){
         return "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + bookIndex;
     }
 
-
+    /**
+     * Creates sql query to retrieve the remainder of a book.
+     * @return a string of the query.
+     */
     private String remainderOfBookQuery(){
         return "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mSBook +
                 " and " + BibleCols.COL_CHAPTER + " = " + mSChap + " and " + BibleCols.COL_VERSE + " >= " + mSVerse +
@@ -342,7 +362,7 @@ public class ReadingActivity extends AppCompatActivity {
     }
 
     /**
-     * Queries DB and populates mCompleteVerseList with all of the day's verses.
+     * Builds query string then calls Query on DB.
      */
     private void populateVerseList(){
         String selectionQuery = "";
@@ -353,24 +373,26 @@ public class ReadingActivity extends AppCompatActivity {
         } else {
             boolean finished = false;
             for(int i=mSBook; !finished; i = (i+1) % 66){
-                System.out.println("i = " + i +"   mSBook = " + mSBook);
-                if(i == mSBook){
+                int x = i;
+                if(x == 0){ x = 66;}
+                if(x == mSBook){
                     selectionQuery = remainderOfBookQuery() + " union ";
-//                    System.out.println(selectionQuery);
-                } else if(i == mEBook){
+                } else if(x == mEBook){
                     selectionQuery += endBookQuery();
                     finished = true;
                 } else {
-                    selectionQuery += wholeBookQuery(i) + " union ";
+                    selectionQuery += wholeBookQuery(x) + " union ";
                 }
             }
         }
-        System.out.println(selectionQuery);
         callBackgroundQuery(selectionQuery);
     }
 
+    /**
+     * Calls background query on DB, uses different class if SDK >= 28.
+     * @param query the DB query
+     */
     void callBackgroundQuery(String query){
-        System.out.println(query);
         if (android.os.Build.VERSION.SDK_INT >= 28){
             backgroundQueryAPI28 BQ = new backgroundQueryAPI28(this);
             BQ.execute(query);
@@ -380,14 +402,15 @@ public class ReadingActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * AsyncTask class used to query DB in background. For use with SDK >= 28, uses PrecomputedText for setText.
+     */
     private class backgroundQueryAPI28 extends AsyncTask<String, Void, PrecomputedText>{
-        private ReadingActivity mReadingActivity;
 
-        // construct precompute related parameters using the TextView that we will set the text on.
+        private final ReadingActivity mReadingActivity;
         final PrecomputedText.Params params = mTextView.getTextMetricsParams();
-        final Reference textViewRef = new WeakReference<>(mTextView);
 
-        public backgroundQueryAPI28(ReadingActivity ra){
+        backgroundQueryAPI28(ReadingActivity ra){
             mReadingActivity = ra;
         }
 
@@ -396,6 +419,7 @@ public class ReadingActivity extends AppCompatActivity {
             SQLiteDatabase db = mDbHelper.getInstance(getApplicationContext()).getReadableDatabase();
             Cursor c = db.rawQuery(query[0],null);
             StringBuilder builder = new StringBuilder();
+            StringBuilder wrapBuilder = new StringBuilder();
             String chap, verse, text;
             int bookNum;
             c.moveToFirst();
@@ -405,15 +429,23 @@ public class ReadingActivity extends AppCompatActivity {
                 verse = c.getString(2);
                 text = c.getString(3);
                 String completeVerse = getAbbreviation(bookNum) + " " + chap + ":" + verse + " " + text;
-                builder.append(completeVerse).append("\n");
+                if(mWrapsAround && bookNum < mSBook){
+                    wrapBuilder.append(completeVerse).append("\n");
+                } else {
+                    builder.append(completeVerse).append("\n");
+                }
                 c.moveToNext();
             }
+            c.close();
 
-            String allText = builder.toString();
-            //TODO delete line
-            System.out.println(allText);
-            final PrecomputedText precomputedText = PrecomputedText.create(allText, params);
-            return precomputedText;
+            String allText;
+            if(mWrapsAround){
+                allText = builder.toString() + wrapBuilder.toString();
+            } else {
+                allText = builder.toString();
+            }
+
+            return PrecomputedText.create(allText, params);
         }
 
         @Override
@@ -424,10 +456,13 @@ public class ReadingActivity extends AppCompatActivity {
         }
     }
 
+    /**
+     * AsyncTask class used to query DB in background. For use with SDK < 28, uses String for setText.
+     */
     private class backgroundQuery extends AsyncTask<String, Void, String>{
-        private ReadingActivity mReadingActivity;
+        private final ReadingActivity mReadingActivity;
 
-        public backgroundQuery(ReadingActivity ra){
+        backgroundQuery(ReadingActivity ra){
             mReadingActivity = ra;
         }
 
@@ -436,6 +471,7 @@ public class ReadingActivity extends AppCompatActivity {
             SQLiteDatabase db = mDbHelper.getInstance(getApplicationContext()).getReadableDatabase();
             Cursor c = db.rawQuery(query[0],null);
             StringBuilder builder = new StringBuilder();
+            StringBuilder wrapBuilder = new StringBuilder();
             String chap, verse, text;
             int bookNum;
             c.moveToFirst();
@@ -445,12 +481,21 @@ public class ReadingActivity extends AppCompatActivity {
                 verse = c.getString(2);
                 text = c.getString(3);
                 String completeVerse = getAbbreviation(bookNum) + " " + chap + ":" + verse + " " + text;
-                builder.append(completeVerse).append("\n");
+                if(mWrapsAround && bookNum < mSBook){
+                    wrapBuilder.append(completeVerse).append("\n");
+                } else {
+                    builder.append(completeVerse).append("\n");
+                }
                 c.moveToNext();
             }
+            c.close();
 
-            String allText = builder.toString();
-            System.out.println(allText);
+            String allText;
+            if(mWrapsAround){
+                allText = builder.toString() + wrapBuilder.toString();
+            } else {
+                allText = builder.toString();
+            }
             return allText;
         }
 

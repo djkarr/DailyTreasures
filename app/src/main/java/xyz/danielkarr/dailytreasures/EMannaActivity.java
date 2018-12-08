@@ -18,8 +18,6 @@ import butterknife.ButterKnife;
 
 public class EMannaActivity extends AppCompatActivity {
 
-    private String mDateString;
-    private final String URL = "https://minister.emanna.com/todaysemanna.cfm?readingdate=";
     private String mCompleteURL;
 
     private final static String TAG = "eManna";
@@ -34,8 +32,9 @@ public class EMannaActivity extends AppCompatActivity {
         ButterKnife.bind(this);
 
         Date today = new Date();
-        mDateString = dateToString(today);
-        mCompleteURL = URL + mDateString;
+        String dateString = dateToString(today);
+        String URL = "https://minister.emanna.com/todaysemanna.cfm?readingdate=";
+        mCompleteURL = URL + dateString;
         getWebsite();
     }
 

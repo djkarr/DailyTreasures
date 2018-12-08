@@ -14,7 +14,7 @@ class Schedule {
     private Date mEndDate;
     private String mStartingBook;
     private String mEndingBook;
-    private ArrayList<String> mBookList;
+    private final ArrayList<String> mBookList;
 
     private static final Schedule ourInstance = new Schedule();
 
