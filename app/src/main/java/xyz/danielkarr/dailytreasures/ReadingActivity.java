@@ -163,7 +163,7 @@ public class ReadingActivity extends AppCompatActivity {
 
     /**
      * Saves today's reading portion's text in the event of screen rotation.
-     * @param outState
+     * @param outState Bundle to save.
      */
     protected void onSaveInstanceState(Bundle outState){
         super.onSaveInstanceState(outState);
@@ -354,6 +354,10 @@ public class ReadingActivity extends AppCompatActivity {
                 " and " + BibleCols.COL_CHAPTER + " > " + mSChap;
     }
 
+    /**
+     * Creates sql query to retrieve the contents of the day's ending book.
+     * @return a string of the query.
+     */
     private String endBookQuery(){
 
         return "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mEBook + " and " +
