@@ -26,7 +26,8 @@
             android:layout_height="wrap_content"
             android:lineSpacingExtra="2sp"
             android:text="@string/loading"
-            android:textSize="20sp" />
+            android:textSize="20sp"
+            android:textStyle="bold" />
     </ScrollView>
 
 
