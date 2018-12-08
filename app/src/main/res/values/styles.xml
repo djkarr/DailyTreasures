@@ -12,6 +12,12 @@
         <item name="android:datePickerDialogTheme">@style/MyDatePickerDialogTheme</item>
     </style>
 
+    <style name="AlertDialogStyle" parent="Theme.AppCompat.Light.Dialog">
+        <item name="android:textColor">@color/colorHighlight</item>
+        <item name="android:textColorPrimary">@color/colorHighlight</item>
+        <item name="android:background">@color/colorAccent</item>
+    </style>
+
     <style name="MyDatePickerDialogTheme" parent="android:Theme.Material.Light.Dialog">
         <item name="android:datePickerStyle">@style/MyDatePickerStyle</item>
     </style>

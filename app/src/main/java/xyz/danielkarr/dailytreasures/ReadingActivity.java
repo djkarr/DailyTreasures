@@ -1,13 +1,16 @@
 package xyz.danielkarr.dailytreasures;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.AsyncTask;
 import android.provider.BaseColumns;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.Layout;
+import android.text.PrecomputedText;
 import android.text.method.ScrollingMovementMethod;
 import android.util.Log;
 import android.widget.ScrollView;
@@ -20,6 +23,8 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.lang.ref.Reference;
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -121,14 +126,33 @@ public class ReadingActivity extends AppCompatActivity {
                     break;
                 }
             }
-            setScheduleVariables();
-            mTextView.setText(("Reading from database, please wait..."));
-            populateVerseList();
+            System.out.println("TODAY INDEX " + mTodayIndex);
+            if(mTodayIndex == 0){
+                System.out.println("Inside IF");
+                invalidSchedule();
+            } else {
+                setScheduleVariables();
+                mTextView.setText(("Reading from database, please wait..."));
+                populateVerseList();
+            }
+
         } else {
             mTextView.setText(savedInstanceState.getCharSequence("verseText"));
             setScroll();
         }
 
+    }
+
+    void invalidSchedule(){
+        System.out.println("Iinside invalidSchedule");
+        AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogStyle);
+        builder.setTitle("Alert").setMessage("This schedule has ended, please go make a new one.").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                finish();
+            }
+        }).show();
+//        finish();
     }
 
     /**
@@ -311,8 +335,10 @@ public class ReadingActivity extends AppCompatActivity {
     }
 
     private String endBookQuery(){
+
         return "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK + " = " + mEBook + " and " +
-                BibleCols.COL_CHAPTER + " = " + mEChap + " and " + BibleCols.COL_VERSE + " <= " + mEVerse;
+                BibleCols.COL_CHAPTER + " < " + mEChap + " union " + "select * from " + BibleCols.TABLE_NAME + " where " + BibleCols.COL_BOOK +
+                " = " + mEBook + " and " + BibleCols.COL_CHAPTER + " = " + mEChap + " and " + BibleCols.COL_VERSE + " <= " + mEVerse;
     }
 
     /**
@@ -327,8 +353,10 @@ public class ReadingActivity extends AppCompatActivity {
         } else {
             boolean finished = false;
             for(int i=mSBook; !finished; i = (i+1) % 66){
+                System.out.println("i = " + i +"   mSBook = " + mSBook);
                 if(i == mSBook){
                     selectionQuery = remainderOfBookQuery() + " union ";
+//                    System.out.println(selectionQuery);
                 } else if(i == mEBook){
                     selectionQuery += endBookQuery();
                     finished = true;
@@ -337,12 +365,63 @@ public class ReadingActivity extends AppCompatActivity {
                 }
             }
         }
+        System.out.println(selectionQuery);
         callBackgroundQuery(selectionQuery);
     }
 
     void callBackgroundQuery(String query){
-        backgroundQuery BQ = new backgroundQuery(this);
-        BQ.execute(query);
+        System.out.println(query);
+        if (android.os.Build.VERSION.SDK_INT >= 28){
+            backgroundQueryAPI28 BQ = new backgroundQueryAPI28(this);
+            BQ.execute(query);
+        } else {
+            backgroundQuery BQ = new backgroundQuery(this);
+            BQ.execute(query);
+        }
+    }
+
+    private class backgroundQueryAPI28 extends AsyncTask<String, Void, PrecomputedText>{
+        private ReadingActivity mReadingActivity;
+
+        // construct precompute related parameters using the TextView that we will set the text on.
+        final PrecomputedText.Params params = mTextView.getTextMetricsParams();
+        final Reference textViewRef = new WeakReference<>(mTextView);
+
+        public backgroundQueryAPI28(ReadingActivity ra){
+            mReadingActivity = ra;
+        }
+
+        @Override
+        protected PrecomputedText doInBackground(String... query) {
+            SQLiteDatabase db = mDbHelper.getInstance(getApplicationContext()).getReadableDatabase();
+            Cursor c = db.rawQuery(query[0],null);
+            StringBuilder builder = new StringBuilder();
+            String chap, verse, text;
+            int bookNum;
+            c.moveToFirst();
+            while (!c.isAfterLast()) {
+                bookNum = c.getInt(0);
+                chap = c.getString(1);
+                verse = c.getString(2);
+                text = c.getString(3);
+                String completeVerse = getAbbreviation(bookNum) + " " + chap + ":" + verse + " " + text;
+                builder.append(completeVerse).append("\n");
+                c.moveToNext();
+            }
+
+            String allText = builder.toString();
+            //TODO delete line
+            System.out.println(allText);
+            final PrecomputedText precomputedText = PrecomputedText.create(allText, params);
+            return precomputedText;
+        }
+
+        @Override
+        protected void onPostExecute(PrecomputedText result) {
+            super.onPostExecute(result);
+            mTextView.setText(result);
+            mReadingActivity.setScroll();
+        }
     }
 
     private class backgroundQuery extends AsyncTask<String, Void, String>{
@@ -354,14 +433,11 @@ public class ReadingActivity extends AppCompatActivity {
 
         @Override
         protected String doInBackground(String... query) {
-            System.out.println("Getting DB Instance");
             SQLiteDatabase db = mDbHelper.getInstance(getApplicationContext()).getReadableDatabase();
-            System.out.println("Querying DB");
             Cursor c = db.rawQuery(query[0],null);
             StringBuilder builder = new StringBuilder();
             String chap, verse, text;
             int bookNum;
-            System.out.println("Moving to first and parsing lines");
             c.moveToFirst();
             while (!c.isAfterLast()) {
                 bookNum = c.getInt(0);
@@ -372,21 +448,17 @@ public class ReadingActivity extends AppCompatActivity {
                 builder.append(completeVerse).append("\n");
                 c.moveToNext();
             }
-            System.out.println("Finished parsing, starting builder.toString()");
-            String completeText = builder.toString();
-            System.out.println("Finished building string, returning and setting text");
-            return completeText;
+
+            String allText = builder.toString();
+            System.out.println(allText);
+            return allText;
         }
 
         @Override
         protected void onPostExecute(String result) {
             super.onPostExecute(result);
-            System.out.println("Setting text");
             mTextView.setText(result);
-//            mTextView.setText("Done");
-            System.out.println("Setting scroll");
             mReadingActivity.setScroll();
-            System.out.println("Finished setting scroll");
         }
     }
 }
