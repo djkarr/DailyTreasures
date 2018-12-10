@@ -248,7 +248,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
             scheduleOne = parseSummaryLine(scheduleOne,1);
             mScheduleOneInfo.setText(scheduleOne);
         }else {
-            mScheduleOneInfo.setText("Schedule 1\n\nDoesn't Exist");
+            mScheduleOneInfo.setText("Reading Plan 1\n\nDoesn't Exist");
         }
         File fileTwo = new File(getApplicationContext().getFilesDir().getPath() + "/" + "schedule2");
         if(fileTwo.exists()){
@@ -256,7 +256,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
             scheduleTwo = parseSummaryLine(scheduleTwo,2);
             mScheduleTwoInfo.setText(scheduleTwo);
         } else {
-            mScheduleTwoInfo.setText("Schedule 2\n\nDoesn't Exist");
+            mScheduleTwoInfo.setText("Reading Plan 2\n\nDoesn't Exist");
         }
     }
 
@@ -269,10 +269,10 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     private String parseSummaryLine(String summaryLine, int num){
         String[] s = summaryLine.split(" ");
         if(s.length == 4){
-            return  "Schedule " + num + "\n\n\n" + "Start Date: " + s[0] + "\n\n" + "End Date: " + s[1] + "\n\n" + "Starting Book: " + s[2] +
+            return  "Reading Plan " + num + "\n\n\n" + "Start Date: " + s[0] + "\n\n" + "End Date: " + s[1] + "\n\n" + "Starting Book: " + s[2] +
                     "\n\n" + "Ending Book: " + s[3];
         } else {
-            return  "Schedule " + num + "\n\n\n" + "Start Date: " + s[0] + "\n\n" + "End Date: " + s[1] + "\n\n" + "Starting Book: " + s[2] +
+            return  "Reading Plan " + num + "\n\n\n" + "Start Date: " + s[0] + "\n\n" + "End Date: " + s[1] + "\n\n" + "Starting Book: " + s[2] +
                     "\n\n" + "Ending Book: " + s[3] + " " + s[4];
         }
     }

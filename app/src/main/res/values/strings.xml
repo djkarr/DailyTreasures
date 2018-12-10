@@ -2,16 +2,18 @@
     <string name="app_name">DailyTreasures</string>
     <string name="home_verse">Your words were found and I ate them,\nAnd Your word became to me\n
     The gladness and joy of my heart,\nFor I am called by Your name,\nO Jehovah, God of hosts.\n~Jer 15:16</string>
-    <string name="read_button">Today\'s Reading Portion #1</string>
-    <string name="read_button_two">Today\'s Reading Portion #2</string>
-    <string name="schedule_button">Create Schedule #1</string>
-    <string name="schedule_button_two">Create Schedule #2</string>
-    <string name="start_date">Start Date</string>
-    <string name="end_date">End Date</string>
+    <string name="read_button">Daily Reading Portion #1</string>
+    <string name="read_button_two">Daily Reading Portion #2</string>
+    <string name="schedule_button">Edit Reading Plan #1</string>
+    <string name="schedule_button_two">Edit Reading Plan #2</string>
+    <string name="start_date">Start Date:</string>
+    <string name="end_date">End Date:</string>
     <string name="submit_button">Save Schedule</string>
     <string name="date_picker_title">Choose Date</string>
-    <string name="start_book_label">Start Book</string>
-    <string name="end_book_label">End Book</string>
-    <string name="emanna_button">eManna</string>
+    <string name="start_book_label">Start Book:</string>
+    <string name="end_book_label">End Book:</string>
+    <string name="emanna_button">eManna Daily Ministry</string>
     <string name="loading">Please wait, fetching data…</string>
+    <string name="reading_plan_one">Reading Plan 1</string>
+    <string name="reading_plan_two">Reading Plan 2</string>
 </resources>

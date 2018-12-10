@@ -143,7 +143,8 @@ public class ReadingActivity extends AppCompatActivity {
      */
     void invalidSchedule(){
         AlertDialog.Builder builder = new AlertDialog.Builder(this, R.style.AlertDialogStyle);
-        builder.setTitle("Completed Schedule").setMessage("This reading schedule has ended, please go make a new one.").setPositiveButton("OK", new DialogInterface.OnClickListener() {
+        builder.setTitle("Completed Schedule").setMessage("This reading plan has either ended, or its start date is set for a future date. " +
+                "You can go back and edit the reading plan to fix this.").setPositiveButton("OK", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 finish();

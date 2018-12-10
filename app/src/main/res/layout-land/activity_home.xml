@@ -27,7 +27,7 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="12dp"
                 android:layout_marginBottom="16dp"
-                android:background="@color/colorAccent"
+                android:background="@color/colorPrimary"
                 android:text="@string/emanna_button"
                 android:textAllCaps="false"
                 android:textColor="@color/colorHighlight" />
@@ -37,14 +37,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:layout_above="@+id/emanna_button"
+                android:layout_centerHorizontal="true"
                 android:layout_marginStart="8dp"
                 android:layout_marginTop="16dp"
-                android:layout_centerHorizontal="true"
                 android:gravity="center"
                 android:text="@string/home_verse"
                 android:textAlignment="center"
                 android:textSize="18sp"
-                android:textStyle="italic" />
+                android:textStyle="bold|italic" />
         </RelativeLayout>
 
         <RelativeLayout
@@ -59,41 +59,44 @@
                 android:layout_alignParentStart="true"
                 android:layout_alignParentTop="true"
                 android:layout_alignParentEnd="true"
+                android:layout_centerHorizontal="true"
                 android:layout_marginStart="12dp"
                 android:layout_marginTop="16dp"
                 android:layout_marginEnd="12dp"
                 android:background="@color/colorPrimary"
                 android:text="@string/schedule_button"
+                android:textAllCaps="false"
                 android:textColor="@color/colorHighlight"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toTopOf="parent"
-                android:layout_centerHorizontal="true"/>
+                app:layout_constraintTop_toTopOf="parent" />
 
             <Button
                 android:id="@+id/schedule_button_two"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_above="@+id/read_button_two"
+                android:layout_centerHorizontal="true"
                 android:layout_marginTop="24dp"
                 android:layout_marginEnd="24dp"
                 android:background="@color/colorPrimary"
                 android:text="@string/schedule_button_two"
+                android:textAllCaps="false"
                 android:textColor="@color/colorHighlight"
                 app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintTop_toBottomOf="@+id/read_button"
-                android:layout_centerHorizontal="true"/>
+                app:layout_constraintTop_toBottomOf="@+id/read_button" />
 
             <Button
                 android:id="@+id/read_button"
                 android:layout_width="match_parent"
                 android:layout_height="72dp"
                 android:layout_below="@+id/schedule_button"
+                android:layout_centerHorizontal="true"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="24dp"
                 android:background="@color/colorSubmit"
                 android:text="@string/read_button"
+                android:textAllCaps="false"
                 android:textColor="@color/colorHighlight"
-                android:layout_centerHorizontal="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/schedule_button" />
 
@@ -102,13 +105,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="72dp"
                 android:layout_alignParentBottom="true"
+                android:layout_centerHorizontal="true"
                 android:layout_marginTop="8dp"
                 android:layout_marginEnd="24dp"
                 android:layout_marginBottom="16dp"
                 android:background="@color/colorSubmit"
                 android:text="@string/read_button_two"
+                android:textAllCaps="false"
                 android:textColor="@color/colorHighlight"
-                android:layout_centerHorizontal="true"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toBottomOf="@+id/schedule_button_two" />
         </RelativeLayout>
