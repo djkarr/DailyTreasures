@@ -6,7 +6,8 @@
     <color name="colorBackground">#D8D4F2</color>
     <color name="colorText">#000022</color>
     <color name="colorSubmit">#005E7C</color>
-    <color name="colorHighlight">#EBF5EE</color>
+    <color name="colorHighlight">#fff</color>
+    <!--<color name="colorHighlight">#EBF5EE</color>-->
 </resources>
 
 

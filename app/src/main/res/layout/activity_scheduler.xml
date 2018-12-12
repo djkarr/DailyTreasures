@@ -32,7 +32,7 @@
                 android:maxLines="1"
                 android:padding="0dp"
                 android:text="@string/start_date"
-                android:textAlignment="textEnd"
+                android:textAlignment="textStart"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@+id/start_date_button"
@@ -48,9 +48,11 @@
                 android:layout_marginEnd="8dp"
                 android:layout_weight="2"
                 android:background="@color/colorPrimary"
+                android:drawableRight="@drawable/ic_date_range"
                 android:gravity="center_vertical"
+                android:paddingHorizontal="16dp"
                 android:text="Button"
-                android:textAlignment="center"
+                android:textAlignment="textStart"
                 android:textAllCaps="false"
                 android:textColor="@color/colorHighlight"
                 android:textSize="16sp"
@@ -76,7 +78,7 @@
                 android:maxLines="1"
                 android:padding="0dp"
                 android:text="@string/end_date"
-                android:textAlignment="textEnd"
+                android:textAlignment="textStart"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 app:layout_constraintBottom_toBottomOf="@+id/end_date_button"
@@ -93,7 +95,10 @@
                 android:layout_marginEnd="8dp"
                 android:layout_weight="2"
                 android:background="@color/colorPrimary"
+                android:drawableRight="@drawable/ic_date_range"
+                android:paddingHorizontal="16dp"
                 android:text="Button"
+                android:textAlignment="textStart"
                 android:textAllCaps="false"
                 android:textColor="@color/colorHighlight"
                 android:textSize="16sp"
@@ -120,7 +125,7 @@
                 android:maxLines="1"
                 android:padding="0dp"
                 android:text="@string/start_book_label"
-                android:textAlignment="textEnd"
+                android:textAlignment="textStart"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 tools:text="@string/start_book_label" />
@@ -135,9 +140,12 @@
                 android:layout_weight="2"
                 android:background="@color/colorPrimary"
                 android:text="Button"
+                android:textAlignment="textStart"
                 android:textAllCaps="false"
                 android:textColor="@color/colorHighlight"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:paddingHorizontal="16dp"
+                android:drawableRight="@drawable/ic_list"/>
         </TableRow>
 
         <TableRow
@@ -157,7 +165,7 @@
                 android:maxLines="1"
                 android:padding="0dp"
                 android:text="@string/end_book_label"
-                android:textAlignment="textEnd"
+                android:textAlignment="textStart"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 tools:text="@string/end_book_label" />
@@ -172,9 +180,12 @@
                 android:layout_weight="2"
                 android:background="@color/colorPrimary"
                 android:text="Button"
+                android:textAlignment="textStart"
                 android:textAllCaps="false"
                 android:textColor="@color/colorHighlight"
-                android:textSize="16sp" />
+                android:textSize="16sp"
+                android:paddingHorizontal="16dp"
+                android:drawableRight="@drawable/ic_list"/>
         </TableRow>
 
         <LinearLayout

@@ -100,10 +100,10 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
 
         if(mScheduleNum == 1){
             mFileName = "schedule";
-            setTitle("Schedule " + 1);
+            setTitle("Reading Plan " + 1);
         } else {
             mFileName = "schedule2";
-            setTitle("Schedule " + 2);
+            setTitle("Reading Plan " + 2);
         }
 
         mStartDateButton.setText(dateToString(mSchedule.getStartDate()));
