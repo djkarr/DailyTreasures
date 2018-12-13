@@ -16,4 +16,9 @@
     <string name="loading">Please wait, fetching data…</string>
     <string name="reading_plan_one">Reading Plan 1</string>
     <string name="reading_plan_two">Reading Plan 2</string>
+    <string name="check_progress_button">Progress</string>
+    <string name="jump_end_button">End</string>
+    <string name="jump_start_button">Start</string>
+    <string name="save_place_button">Save</string>
+    <string name="restore_place_button">Restore</string>
 </resources>

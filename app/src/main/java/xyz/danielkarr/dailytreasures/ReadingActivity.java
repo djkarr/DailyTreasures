@@ -12,6 +12,7 @@ import android.os.Bundle;
 import android.text.Layout;
 import android.text.PrecomputedText;
 import android.text.method.ScrollingMovementMethod;
+import android.widget.Button;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
@@ -30,8 +31,10 @@ import java.util.List;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import butterknife.OnClick;
 
 public class ReadingActivity extends AppCompatActivity {
+    // lines of schedule
     private List<String> mLines;
     private ArrayList<String> mBookAbrList;
 
@@ -39,6 +42,7 @@ public class ReadingActivity extends AppCompatActivity {
     private SQLiteDatabase mDB;
     private String mStringDate;
     private int mTodayIndex;
+    private String mTitle;
 
     // Schedule Variables, S for "starting" : E for "ending"
     private int mSBook;
@@ -54,6 +58,8 @@ public class ReadingActivity extends AppCompatActivity {
 
     private int mScheduleNum;
     private String mFileName;
+
+    private float mSavedScrollValue;
 
     private static final String TAG = "READINGACTIVITY";
 
@@ -134,6 +140,8 @@ public class ReadingActivity extends AppCompatActivity {
         } else {
             mTextView.setText(savedInstanceState.getCharSequence("verseText"));
             setScroll();
+            mTitle = savedInstanceState.getString("title");
+            setTitle(mTitle);
         }
 
     }
@@ -152,14 +160,55 @@ public class ReadingActivity extends AppCompatActivity {
         }).show();
     }
 
+    void populateTitle(){
+        String sbook = getAbbreviation(mSBook);
+        String ebook = getAbbreviation(mEBook);
+        mTitle = "Portion #" + mScheduleNum + "   (" + sbook + " " + Integer.toString(mSChap) + ":" +
+                Integer.toString(mSVerse) + " - " + ebook + " " + Integer.toString(mEChap) + ":" + Integer.toString(mEVerse) +
+                ")";
+        setTitle(mTitle);
+    }
+
+
+    @OnClick(R.id.save_place_button)
+    void saveScrollPlace(){
+        mSavedScrollValue = getScrollSpot();
+    }
+
+    @OnClick(R.id.restore_place_button)
+    void restoreReadingPlace(){
+        setScrollSpot(mSavedScrollValue);
+    }
+
+    @OnClick(R.id.jump_start_button)
+    void jumpStart(){
+        mScrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                mScrollView.scrollTo(0,0);
+            }
+        });
+    }
+
+    @OnClick(R.id.jump_end_button)
+    void jumpEnd(){
+        mScrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                mScrollView.fullScroll(mScrollView.FOCUS_DOWN);
+            }
+        });
+    }
+
+
     /**
      * Saves scroll position when the user leaves so that they can resume their reading.
      */
     @Override
     public void onPause(){
         super.onPause();
-        float scrollY = getScrollSpot();
-        writeScrollYToFile(scrollY);
+        mSavedScrollValue = getScrollSpot();
+        writeScrollYToFile(mSavedScrollValue);
     }
 
     /**
@@ -170,6 +219,7 @@ public class ReadingActivity extends AppCompatActivity {
         super.onSaveInstanceState(outState);
         CharSequence verseText = mTextView.getText();
         outState.putCharSequence("verseText", verseText);
+        outState.putString("title", mTitle);
     }
 
     /**
@@ -219,6 +269,7 @@ public class ReadingActivity extends AppCompatActivity {
                 String[] parsedLine = line.split(" ");
                 if(parsedLine[0].equals(mStringDate)){
                     final float yScroll = Float.parseFloat(parsedLine[1]);
+                    mSavedScrollValue = yScroll;
                     mScrollView.post(new Runnable() {
                         @Override
                         public void run() {
@@ -301,6 +352,7 @@ public class ReadingActivity extends AppCompatActivity {
         mIsSingleBook = mSBook == mEBook;
         mIsSingleChap = mIsSingleBook && mSChap == mEChap;
         mWrapsAround = mSBook > mEBook;
+        populateTitle();
     }
 
     /**
