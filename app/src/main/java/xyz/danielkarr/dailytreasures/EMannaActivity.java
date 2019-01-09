@@ -39,7 +39,7 @@ public class EMannaActivity extends AppCompatActivity {
     }
 
     /**
-     * Return String representation of a date, MM/DD/YYYY, if day <10 adds a zero to it
+     * Return String representation of a date, MM/DD/YYYY, if month or day <10 adds a zero to it
      * to make it the same format as the eManna site
      * @param date to get a string of
      * @return String representation of date
@@ -50,10 +50,8 @@ public class EMannaActivity extends AppCompatActivity {
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH)+1;
         int day = calendar.get(Calendar.DAY_OF_MONTH);
-        if(day < 10){
-            return month + "/0" + day + "/" + year;
-        }
-        return month + "/" + day + "/" + year;
+        String formatted = String.format("%02d/%02d/" + year, month, day);
+        return formatted;
     }
 
     private void getWebsite() {

@@ -59,7 +59,7 @@ public class HomeActivity extends AppCompatActivity {
             intent.putExtra("scheduleNum", 1);
             startActivity(intent);
         } else {
-            Toast.makeText(this,"Schedule #1 has not been created!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"Reading Plan #1 has not been created!",Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -70,7 +70,7 @@ public class HomeActivity extends AppCompatActivity {
             intent.putExtra("scheduleNum", 2);
             startActivity(intent);
         } else {
-            Toast.makeText(this,"Schedule #2 has not been created!",Toast.LENGTH_SHORT).show();
+            Toast.makeText(this,"Reading Plan #2 has not been created!",Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -78,5 +78,29 @@ public class HomeActivity extends AppCompatActivity {
     public void onEmannaClick(){
         Intent intent = new Intent(this, EMannaActivity.class);
         startActivity(intent);
+    }
+
+    @OnClick(R.id.catch_up_button_one)
+    void onCatchUpOneClick(){
+        if(mScheduleOneExists){
+            Intent intent = new Intent(this, ProgessActivity.class);
+            intent.putExtra("scheduleNum", 1);
+            startActivity(intent);
+        } else {
+            Toast.makeText(this,"Readling Plan #1 has not been created!",Toast.LENGTH_SHORT).show();
+        }
+
+    }
+
+    @OnClick(R.id.catch_up_button_two)
+    void onCatchUpTwoClick(){
+        if(mScheduleTwoExists){
+            Intent intent = new Intent(this, ProgessActivity.class);
+            intent.putExtra("scheduleNum", 2);
+            startActivity(intent);
+        } else {
+            Toast.makeText(this,"Reading Plan #2 has not been created!",Toast.LENGTH_SHORT).show();
+        }
+
     }
 }

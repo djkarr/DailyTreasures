@@ -24,6 +24,7 @@
         <activity android:name=".BookListActivity" />
         <activity android:name=".ReadingActivity" />
         <activity android:name=".EMannaActivity" />
+        <activity android:name=".ProgessActivity" />
     </application>
 
 </manifest>

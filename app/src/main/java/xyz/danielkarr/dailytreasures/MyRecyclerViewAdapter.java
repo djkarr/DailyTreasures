@@ -14,18 +14,32 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
     private final List<String> mData;
     private final LayoutInflater mInflater;
     private ItemClickListener mClickListener;
+    private boolean mIsSchedule;
 
     // data is passed into the constructor
     MyRecyclerViewAdapter(Context context, List<String> data) {
         this.mInflater = LayoutInflater.from(context);
         this.mData = data;
+        mIsSchedule = false;
+    }
+
+    MyRecyclerViewAdapter(Context context, List<String> data, boolean scheduleFlag) {
+        this.mInflater = LayoutInflater.from(context);
+        this.mData = data;
+        mIsSchedule = true;
     }
 
     // inflates the row layout from xml when needed
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-        View view = mInflater.inflate(R.layout.recyclerview_row, parent, false);
-        return new ViewHolder(view);
+        if(!mIsSchedule){
+            View view = mInflater.inflate(R.layout.recyclerview_row, parent, false);
+            return new ViewHolder(view);
+        } else {
+            View view = mInflater.inflate(R.layout.rv_row_schedule, parent, false);
+            return new ViewHolder(view);
+        }
+
     }
 
     // binds the data to the TextView in each row
@@ -48,8 +62,14 @@ public class MyRecyclerViewAdapter extends RecyclerView.Adapter<MyRecyclerViewAd
 
         ViewHolder(View itemView) {
             super(itemView);
-            myTextView = itemView.findViewById(R.id.booklName);
-            itemView.setOnClickListener(this);
+            if(!mIsSchedule){
+                myTextView = itemView.findViewById(R.id.booklName);
+                itemView.setOnClickListener(this);
+            } else {
+                myTextView = itemView.findViewById(R.id.schedule_view);
+                itemView.setOnClickListener(this);
+            }
+
         }
 
         @Override

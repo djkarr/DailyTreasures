@@ -31,7 +31,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginStart="32dp"
-        android:layout_marginTop="16dp"
+        android:layout_marginTop="24dp"
         android:layout_marginEnd="32dp"
         android:background="@color/colorPrimary"
         android:drawableEnd="@drawable/ic_edit"
@@ -44,7 +44,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/read_button" />
+        app:layout_constraintTop_toBottomOf="@+id/catch_up_button_one" />
 
     <Button
         android:id="@+id/read_button"
@@ -82,24 +82,25 @@
         android:textColor="@color/colorHighlight"
         android:textSize="18sp"
         app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/schedule_button_two" />
 
-    <TextView
-        android:id="@+id/home_verse"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="16dp"
-        android:gravity="top"
-        android:padding="0dp"
-        android:text="@string/home_verse"
-        android:textAlignment="center"
-        android:textSize="18sp"
-        android:textStyle="bold|italic"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/emanna_button" />
+    <!--<TextView-->
+        <!--android:id="@+id/home_verse"-->
+        <!--android:layout_width="0dp"-->
+        <!--android:layout_height="0dp"-->
+        <!--android:layout_marginTop="16dp"-->
+        <!--android:gravity="top"-->
+        <!--android:padding="0dp"-->
+        <!--android:text="@string/home_verse"-->
+        <!--android:textAlignment="center"-->
+        <!--android:textSize="18sp"-->
+        <!--android:textStyle="bold|italic"-->
+        <!--app:layout_constraintBottom_toBottomOf="parent"-->
+        <!--app:layout_constraintEnd_toEndOf="parent"-->
+        <!--app:layout_constraintStart_toStartOf="parent"-->
+        <!--app:layout_constraintTop_toBottomOf="@+id/emanna_button" />-->
 
     <Button
         android:id="@+id/emanna_button"
@@ -112,6 +113,45 @@
         android:drawableRight="@drawable/ic_restaurant"
         android:paddingHorizontal="24dp"
         android:text="@string/emanna_button"
+        android:textAlignment="textStart"
+        android:textAllCaps="false"
+        android:textColor="@color/colorHighlight"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/catch_up_button_two" />
+
+    <Button
+        android:id="@+id/catch_up_button_one"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="32dp"
+        android:background="@color/colorSubmit"
+        android:drawableRight="@drawable/ic_swap"
+        android:paddingHorizontal="24dp"
+        android:text="@string/missed_day_button"
+        android:textAlignment="textStart"
+        android:textAllCaps="false"
+        android:textColor="@color/colorHighlight"
+        android:textSize="18sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/read_button" />
+
+    <Button
+        android:id="@+id/catch_up_button_two"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginEnd="32dp"
+        android:background="@color/colorSubmit"
+        android:drawableRight="@drawable/ic_swap"
+        android:paddingHorizontal="24dp"
+        android:text="@string/missed_day_button"
         android:textAlignment="textStart"
         android:textAllCaps="false"
         android:textColor="@color/colorHighlight"

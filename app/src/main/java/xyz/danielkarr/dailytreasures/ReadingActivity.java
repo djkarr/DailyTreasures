@@ -110,8 +110,13 @@ public class ReadingActivity extends AppCompatActivity {
 
         mDbHelper = DatabaseHelper.getInstance(this);
         mDB = mDbHelper.getReadableDatabase();
-        Date today = new Date();
-        mStringDate = dateToString(today);
+        if(getIntent().getExtras().containsKey("dateString")){
+            mStringDate = getIntent().getExtras().getString("dateString");
+        } else {
+            Date today = new Date();
+            mStringDate = dateToString(today);
+        }
+
         mBookAbrList = new ArrayList<>(Arrays.asList(
                 "Gen","Exo","Lev","Num","Deu","Jsh","Jdg","Rut","1Sa","2Sa","1Ki","2Ki",
                 "1Ch","2Ch","Ezr","Neh","Est","Job","Psa","Prv","Ecc","SoS","Isa","Jer",
