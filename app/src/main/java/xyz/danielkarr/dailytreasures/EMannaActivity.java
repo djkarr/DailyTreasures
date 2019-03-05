@@ -36,6 +36,7 @@ public class EMannaActivity extends AppCompatActivity {
         String URL = "https://minister.emanna.com/todaysemanna.cfm?readingdate=";
         mCompleteURL = URL + dateString;
         getWebsite();
+        mEMannaView.setTextIsSelectable(true);
     }
 
     /**
