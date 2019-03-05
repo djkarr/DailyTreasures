@@ -46,6 +46,9 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
     @BindView(R.id.end_book_button)
     Button mEndBookButton;
 
+    @BindView(R.id.submit_button)
+    Button mSubmitButton;
+
     private Schedule mSchedule;
     private ArrayList<DailyPortion> mDailyList;
 
@@ -196,6 +199,7 @@ public class SchedulerActivity extends AppCompatActivity implements DatePickerFr
             setNumDaysTotal();
             setTotalVerseCount();
             if(isPortionSizeSufficient()){
+                mSubmitButton.setEnabled(false);
                 calcuateDailyPortions();
                 mDbHelper.close();
                 mDB.close();
