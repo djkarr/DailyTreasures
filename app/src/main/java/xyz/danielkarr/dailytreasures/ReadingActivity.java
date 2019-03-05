@@ -148,7 +148,7 @@ public class ReadingActivity extends AppCompatActivity {
             mTitle = savedInstanceState.getString("title");
             setTitle(mTitle);
         }
-
+        mTextView.setTextIsSelectable(true);
     }
 
     /**
